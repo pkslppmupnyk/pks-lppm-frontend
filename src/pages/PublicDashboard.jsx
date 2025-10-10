@@ -29,14 +29,14 @@ const StatusBadge = ({ status }) => {
 
 // Komponen TableRow diperbarui dengan umpan balik visual
 const TableRow = ({ pks }) => {
-  // TIDAK ADA useNavigate atau handleRowClick di sini
   return (
-    // TIDAK ADA onClick di <tr>
     <tr className="border-b hover:bg-gray-50">
       <td className="py-3 px-4 whitespace-normal break-words">
         {pks.content?.judul || "-"}
       </td>
-      <td className="py-3 px-4 font-mono text-sm whitespace-nowrap">
+      <td className="py-3 px-4 font-mono text-sm whitespace-normal break-words">
+        {" "}
+        {/* Ditambahkan break-words */}
         {pks.content?.nomor || "-"}
       </td>
       <td className="py-3 px-4 whitespace-nowrap">
@@ -52,7 +52,6 @@ const TableRow = ({ pks }) => {
       </td>
       <td className="py-3 px-4 whitespace-nowrap text-center">
         {pks.content?.nomor ? (
-          // Biarkan komponen <Link> yang menangani semua navigasi
           <Link
             to={`/track/${pks.content.nomor}`}
             className="bg-green-600 text-white text-xs font-semibold py-1 px-3 rounded-md hover:bg-green-700 transition-colors"
@@ -134,13 +133,14 @@ export default function PublicDashboard() {
             <table className="min-w-full bg-white table-fixed w-full">
               <thead className="bg-gray-100">
                 <tr>
-                  <th className="w-[30%] py-3 px-4 text-left font-semibold text-gray-600">
+                  {/* --- LEBAR KOLOM DISESUAIKAN DI SINI --- */}
+                  <th className="w-[25%] py-3 px-4 text-left font-semibold text-gray-600">
                     Judul
                   </th>
-                  <th className="w-[15%] py-3 px-4 text-left font-semibold text-gray-600">
+                  <th className="w-[25%] py-3 px-4 text-left font-semibold text-gray-600">
                     Nomor PKS
                   </th>
-                  <th className="w-[20%] py-3 px-4 text-left font-semibold text-gray-600">
+                  <th className="w-[15%] py-3 px-4 text-left font-semibold text-gray-600">
                     Pihak Kedua
                   </th>
                   <th className="w-[10%] py-3 px-4 text-left font-semibold text-gray-600">
