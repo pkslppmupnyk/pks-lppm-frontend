@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import pksService from "../services/pksService";
 import Modal from "../components/Modal";
 
-// Komponen helper untuk menampilkan baris data detail
+// Komponen helper (tidak berubah)
 const DetailRow = ({ label, value }) => (
   <div className="py-2">
     <dt className="text-sm font-medium text-gray-500">{label}</dt>
@@ -11,7 +11,6 @@ const DetailRow = ({ label, value }) => (
   </div>
 );
 
-// Opsi status yang valid untuk modal darurat
 const STATUS_OPTIONS = [
   "draft",
   "menunggu dokumen",
@@ -27,7 +26,7 @@ export default function PksDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // State untuk modal revisi/tolak
+  // State untuk modal (tidak berubah)
   const [isCommentModalOpen, setIsCommentModalOpen] = useState(false);
   const [modalContent, setModalContent] = useState({
     title: "",
@@ -39,22 +38,27 @@ export default function PksDetailPage() {
   const [updateLoading, setUpdateLoading] = useState(false);
   const [updateError, setUpdateError] = useState("");
 
-  // State untuk modal status darurat
   const [isEmergencyModalOpen, setIsEmergencyModalOpen] = useState(false);
   const [newStatus, setNewStatus] = useState("");
 
-  // State untuk modal Hapus
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState("");
 
+  // --- STATE BARU UNTUK MODAL HAPUS FILE ---
+  const [isFileDeleteModalOpen, setIsFileDeleteModalOpen] = useState(false);
+  const [fileDeleteLoading, setFileDeleteLoading] = useState(false);
+  const [fileDeleteError, setFileDeleteError] = useState("");
+  // -----------------------------------------
+
   const fetchPks = useCallback(async () => {
+    // ... (fungsi tidak berubah)
     if (!nomor) return;
     try {
       setLoading(true);
       const response = await pksService.getPksByNomor(nomor);
       setPks(response);
-      setNewStatus(response.properties.status); // Untuk modal darurat
+      setNewStatus(response.properties.status);
     } catch (err) {
       setError("Gagal mengambil data PKS.");
     } finally {
@@ -66,7 +70,7 @@ export default function PksDetailPage() {
     fetchPks();
   }, [fetchPks]);
 
-  // Fungsi untuk membuka modal komentar (revisi/tolak)
+  // ... (semua fungsi handle lainnya tidak berubah)
   const openCommentModal = (config) => {
     setModalContent(config);
     setComment("");
@@ -74,7 +78,6 @@ export default function PksDetailPage() {
     setIsCommentModalOpen(true);
   };
 
-  // Fungsi generik untuk update status
   const handleStatusUpdate = async (status, commentText) => {
     setUpdateLoading(true);
     setUpdateError("");
@@ -88,7 +91,6 @@ export default function PksDetailPage() {
             : pks.properties.comment,
       },
     };
-
     try {
       await pksService.updatePks(nomor, payload);
       setIsCommentModalOpen(false);
@@ -101,7 +103,6 @@ export default function PksDetailPage() {
     }
   };
 
-  // Handler untuk form di dalam modal komentar
   const handleCommentModalSubmit = (e) => {
     e.preventDefault();
     if (modalContent.commentRequired && !comment.trim()) {
@@ -114,7 +115,6 @@ export default function PksDetailPage() {
     handleStatusUpdate(modalContent.newStatus, fullComment);
   };
 
-  // Handler untuk modal darurat
   const handleEmergencyStatusUpdate = (e) => {
     e.preventDefault();
     handleStatusUpdate(newStatus, comment);
@@ -134,10 +134,25 @@ export default function PksDetailPage() {
     }
   };
 
-  // Fungsi untuk merender tombol aksi utama berdasarkan status
+  // --- FUNGSI BARU UNTUK HAPUS FILE ---
+  const handleDeleteFile = async () => {
+    setFileDeleteLoading(true);
+    setFileDeleteError("");
+    try {
+      await pksService.deletePksFile(nomor);
+      setIsFileDeleteModalOpen(false);
+      fetchPks(); // Refresh data untuk menghilangkan info file
+    } catch (err) {
+      setFileDeleteError("Gagal menghapus file lampiran.");
+    } finally {
+      setFileDeleteLoading(false);
+    }
+  };
+  // ------------------------------------
+
+  // ... (fungsi renderActionButtons tidak berubah)
   const renderActionButtons = () => {
     const status = pks?.properties?.status;
-
     switch (status) {
       case "draft":
         return (
@@ -311,14 +326,12 @@ export default function PksDetailPage() {
               Generate Dokumen (.docx)
             </button>
 
-            {/* --- BLOK BARU DITAMBAHKAN DI SINI --- */}
             {fileUpload?.fileName && (
               <div className="mt-4 pt-4 border-t">
                 <h4 className="text-sm font-semibold text-gray-600 mb-2">
                   File Tersimpan:
                 </h4>
                 <div className="flex items-center bg-gray-50 p-2 rounded-md">
-                  {/* SVG Icon untuk file */}
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-6 w-6 text-red-500 mr-3"
@@ -345,7 +358,6 @@ export default function PksDetailPage() {
                 </button>
               </div>
             )}
-            {/* --- AKHIR BLOK BARU --- */}
 
             <div className="pt-4 border-t mt-6">
               <h3 className="font-semibold text-lg text-red-600">
@@ -357,6 +369,18 @@ export default function PksDetailPage() {
               >
                 Ubah Status (Manual)
               </button>
+
+              {/* --- TOMBOL BARU DITAMBAHKAN DI SINI --- */}
+              {fileUpload?.fileName && (
+                <button
+                  onClick={() => setIsFileDeleteModalOpen(true)}
+                  className="mt-2 w-full px-4 py-2 font-semibold text-white bg-orange-600 rounded-lg hover:bg-orange-700"
+                >
+                  Hapus Lampiran
+                </button>
+              )}
+              {/* -------------------------------------- */}
+
               <button
                 onClick={() => setIsDeleteModalOpen(true)}
                 className="mt-2 w-full px-4 py-2 font-semibold text-white bg-red-600 rounded-lg hover:bg-red-800"
@@ -368,7 +392,7 @@ export default function PksDetailPage() {
         </div>
       </div>
 
-      {/* ... (semua kode Modal tidak berubah) ... */}
+      {/* ... (Modal Revisi/Tolak tidak berubah) ... */}
       <Modal
         isOpen={isCommentModalOpen}
         onClose={() => setIsCommentModalOpen(false)}
@@ -411,6 +435,7 @@ export default function PksDetailPage() {
         </form>
       </Modal>
 
+      {/* ... (Modal Darurat tidak berubah) ... */}
       <Modal
         isOpen={isEmergencyModalOpen}
         onClose={() => setIsEmergencyModalOpen(false)}
@@ -477,10 +502,11 @@ export default function PksDetailPage() {
         </form>
       </Modal>
 
+      {/* ... (Modal Hapus PKS tidak berubah) ... */}
       <Modal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
-        title="Konfirmasi Hapus"
+        title="Konfirmasi Hapus PKS"
       >
         <div>
           <p className="text-gray-700">
@@ -507,7 +533,43 @@ export default function PksDetailPage() {
             disabled={deleteLoading}
             className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:bg-gray-400"
           >
-            {deleteLoading ? "Menghapus..." : "Ya, Hapus"}
+            {deleteLoading ? "Menghapus..." : "Ya, Hapus PKS"}
+          </button>
+        </div>
+      </Modal>
+
+      {/* --- MODAL BARU UNTUK KONFIRMASI HAPUS FILE --- */}
+      <Modal
+        isOpen={isFileDeleteModalOpen}
+        onClose={() => setIsFileDeleteModalOpen(false)}
+        title="Konfirmasi Hapus Lampiran"
+      >
+        <div>
+          <p className="text-gray-700">
+            Apakah Anda yakin ingin menghapus file lampiran{" "}
+            <strong>{fileUpload.docName}</strong>?
+          </p>
+          {fileDeleteError && (
+            <p className="mt-4 text-sm text-center text-red-600">
+              {fileDeleteError}
+            </p>
+          )}
+        </div>
+        <div className="mt-6 flex justify-end space-x-2">
+          <button
+            type="button"
+            onClick={() => setIsFileDeleteModalOpen(false)}
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300"
+          >
+            Batal
+          </button>
+          <button
+            type="button"
+            onClick={handleDeleteFile}
+            disabled={fileDeleteLoading}
+            className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:bg-gray-400"
+          >
+            {fileDeleteLoading ? "Menghapus..." : "Ya, Hapus Lampiran"}
           </button>
         </div>
       </Modal>

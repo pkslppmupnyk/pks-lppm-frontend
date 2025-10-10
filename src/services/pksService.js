@@ -79,6 +79,15 @@ const uploadPksFile = async (nomor, file) => {
   }
 };
 
+const deletePksFile = async (nomor) => {
+  try {
+    const response = await apiClient.delete(`/pks/${nomor}/file`);
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
 const generateDocx = async (nomor) => {
   try {
     const response = await apiClient.get(`/pks/${nomor}/generate`, {
@@ -116,7 +125,8 @@ const pksService = {
   generateDocx,
   deletePks,
   sendEmail,
-  uploadPksFile, // <-- Daftarkan
+  uploadPksFile,
+  deletePksFile, // <-- Daftarkan
 };
 
 export default pksService;
