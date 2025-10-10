@@ -2,15 +2,16 @@ import React, { useEffect, useState, useCallback } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import pksService from "../services/pksService";
 import Modal from "../components/Modal";
+import PdfViewer from "../components/PdfViewer"; // <-- Impor komponen viewer
+import { API_URL } from "../services/apiClient"; // <-- Impor API_URL
 
-// Komponen helper (tidak berubah)
+// ... (Komponen DetailRow dan STATUS_OPTIONS tidak berubah)
 const DetailRow = ({ label, value }) => (
   <div className="py-2">
     <dt className="text-sm font-medium text-gray-500">{label}</dt>
     <dd className="mt-1 text-md text-gray-900">{value || "-"}</dd>
   </div>
 );
-
 const STATUS_OPTIONS = [
   "draft",
   "menunggu dokumen",
@@ -26,7 +27,7 @@ export default function PksDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // State untuk modal (tidak berubah)
+  // ... (Semua state dan fungsi handle lainnya TIDAK BERUBAH)
   const [isCommentModalOpen, setIsCommentModalOpen] = useState(false);
   const [modalContent, setModalContent] = useState({
     title: "",
@@ -37,22 +38,16 @@ export default function PksDetailPage() {
   const [comment, setComment] = useState("");
   const [updateLoading, setUpdateLoading] = useState(false);
   const [updateError, setUpdateError] = useState("");
-
   const [isEmergencyModalOpen, setIsEmergencyModalOpen] = useState(false);
   const [newStatus, setNewStatus] = useState("");
-
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState("");
-
-  // --- STATE BARU UNTUK MODAL HAPUS FILE ---
   const [isFileDeleteModalOpen, setIsFileDeleteModalOpen] = useState(false);
   const [fileDeleteLoading, setFileDeleteLoading] = useState(false);
   const [fileDeleteError, setFileDeleteError] = useState("");
-  // -----------------------------------------
 
   const fetchPks = useCallback(async () => {
-    // ... (fungsi tidak berubah)
     if (!nomor) return;
     try {
       setLoading(true);
@@ -70,7 +65,6 @@ export default function PksDetailPage() {
     fetchPks();
   }, [fetchPks]);
 
-  // ... (semua fungsi handle lainnya tidak berubah)
   const openCommentModal = (config) => {
     setModalContent(config);
     setComment("");
@@ -134,23 +128,20 @@ export default function PksDetailPage() {
     }
   };
 
-  // --- FUNGSI BARU UNTUK HAPUS FILE ---
   const handleDeleteFile = async () => {
     setFileDeleteLoading(true);
     setFileDeleteError("");
     try {
       await pksService.deletePksFile(nomor);
       setIsFileDeleteModalOpen(false);
-      fetchPks(); // Refresh data untuk menghilangkan info file
+      fetchPks();
     } catch (err) {
       setFileDeleteError("Gagal menghapus file lampiran.");
     } finally {
       setFileDeleteLoading(false);
     }
   };
-  // ------------------------------------
 
-  // ... (fungsi renderActionButtons tidak berubah)
   const renderActionButtons = () => {
     const status = pks?.properties?.status;
     switch (status) {
@@ -262,6 +253,12 @@ export default function PksDetailPage() {
     pksService.downloadFile(nomor, fileUpload?.docName);
   const handleGenerate = () => pksService.generateDocx(nomor);
 
+  // URL untuk PDF Viewer
+  const pdfUrl =
+    properties.status === "menunggu review" && fileUpload?.fileName
+      ? `${API_URL}/pks/${nomor}/file`
+      : null;
+
   return (
     <div>
       <Link
@@ -270,129 +267,144 @@ export default function PksDetailPage() {
       >
         &larr; Kembali ke Dasbor
       </Link>
-      <div className="bg-white shadow-md rounded-lg p-6">
-        <div className="border-b pb-4 mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">{content?.judul}</h1>
-          <p className="text-gray-500">{content?.nomor}</p>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="md:col-span-2 space-y-4">
-            <dl>
-              <DetailRow
-                label="Status Saat Ini"
-                value={properties?.status?.toUpperCase()}
-              />
-              <DetailRow
-                label="Komentar Terakhir"
-                value={properties?.comment}
-              />
-              <DetailRow
-                label="Instansi Pihak Kedua"
-                value={pihakKedua?.instansi}
-              />
-              <DetailRow
-                label="Penanggung Jawab"
-                value={`${pihakKedua?.nama || ""} (${
-                  pihakKedua?.jabatan || ""
-                })`}
-              />
-              <DetailRow label="Email Kontak" value={properties?.email} />
-              <DetailRow
-                label="Tanggal Berlaku"
-                value={
-                  content?.tanggal && content?.tanggalKadaluarsa
-                    ? `${new Date(content.tanggal).toLocaleDateString(
-                        "id-ID"
-                      )} - ${new Date(
-                        content.tanggalKadaluarsa
-                      ).toLocaleDateString("id-ID")}`
-                    : "-"
-                }
-              />
-              <DetailRow label="Alamat" value={pihakKedua?.alamat} />
-            </dl>
+
+      {/* --- KONTEN UTAMA: DETAIL DAN PDF VIEWER --- */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+        {/* Kolom Detail PKS */}
+        <div className="bg-white shadow-md rounded-lg p-6">
+          <div className="border-b pb-4 mb-6">
+            <h1 className="text-2xl font-bold text-gray-800">
+              {content?.judul}
+            </h1>
+            <p className="text-gray-500">{content?.nomor}</p>
           </div>
-          <div className="md:col-span-1 space-y-4">
-            <h3 className="font-semibold text-lg border-b pb-2">Aksi Utama</h3>
-            {renderActionButtons()}
-
-            <h3 className="font-semibold text-lg border-b pb-2 pt-4">
-              Aksi Dokumen
-            </h3>
-            <button
-              onClick={handleGenerate}
-              className="w-full px-4 py-2 font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700"
-            >
-              Generate Dokumen (.docx)
-            </button>
-
-            {fileUpload?.fileName && (
-              <div className="mt-4 pt-4 border-t">
-                <h4 className="text-sm font-semibold text-gray-600 mb-2">
-                  File Tersimpan:
-                </h4>
-                <div className="flex items-center bg-gray-50 p-2 rounded-md">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-6 w-6 text-red-500 mr-3"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                    />
-                  </svg>
-                  <span className="text-sm text-gray-800 truncate">
-                    {fileUpload.docName}
-                  </span>
-                </div>
-                <button
-                  onClick={handleDownload}
-                  className="mt-2 w-full px-4 py-2 font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700"
-                >
-                  Unduh Lampiran
-                </button>
-              </div>
-            )}
-
-            <div className="pt-4 border-t mt-6">
-              <h3 className="font-semibold text-lg text-red-600">
-                Zona Berbahaya
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="md:col-span-2 space-y-4">
+              <dl>
+                <DetailRow
+                  label="Status Saat Ini"
+                  value={properties?.status?.toUpperCase()}
+                />
+                <DetailRow
+                  label="Komentar Terakhir"
+                  value={properties?.comment}
+                />
+                <DetailRow
+                  label="Instansi Pihak Kedua"
+                  value={pihakKedua?.instansi}
+                />
+                <DetailRow
+                  label="Penanggung Jawab"
+                  value={`${pihakKedua?.nama || ""} (${
+                    pihakKedua?.jabatan || ""
+                  })`}
+                />
+                <DetailRow label="Email Kontak" value={properties?.email} />
+                <DetailRow
+                  label="Tanggal Berlaku"
+                  value={
+                    content?.tanggal && content?.tanggalKadaluarsa
+                      ? `${new Date(content.tanggal).toLocaleDateString(
+                          "id-ID"
+                        )} - ${new Date(
+                          content.tanggalKadaluarsa
+                        ).toLocaleDateString("id-ID")}`
+                      : "-"
+                  }
+                />
+                <DetailRow label="Alamat" value={pihakKedua?.alamat} />
+              </dl>
+            </div>
+            <div className="md:col-span-1 space-y-4">
+              <h3 className="font-semibold text-lg border-b pb-2">
+                Aksi Utama
+              </h3>
+              {renderActionButtons()}
+              <h3 className="font-semibold text-lg border-b pb-2 pt-4">
+                Aksi Dokumen
               </h3>
               <button
-                onClick={() => setIsEmergencyModalOpen(true)}
-                className="mt-2 w-full px-4 py-2 font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700"
+                onClick={handleGenerate}
+                className="w-full px-4 py-2 font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700"
               >
-                Ubah Status (Manual)
+                Generate Dokumen (.docx)
               </button>
-
-              {/* --- TOMBOL BARU DITAMBAHKAN DI SINI --- */}
               {fileUpload?.fileName && (
-                <button
-                  onClick={() => setIsFileDeleteModalOpen(true)}
-                  className="mt-2 w-full px-4 py-2 font-semibold text-white bg-orange-600 rounded-lg hover:bg-orange-700"
-                >
-                  Hapus Lampiran
-                </button>
+                <div className="mt-4 pt-4 border-t">
+                  <h4 className="text-sm font-semibold text-gray-600 mb-2">
+                    File Tersimpan:
+                  </h4>
+                  <div className="flex items-center bg-gray-50 p-2 rounded-md">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-6 w-6 text-red-500 mr-3"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      />
+                    </svg>
+                    <span className="text-sm text-gray-800 truncate">
+                      {fileUpload.docName}
+                    </span>
+                  </div>
+                  <button
+                    onClick={handleDownload}
+                    className="mt-2 w-full px-4 py-2 font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700"
+                  >
+                    Unduh Lampiran
+                  </button>
+                </div>
               )}
-              {/* -------------------------------------- */}
-
-              <button
-                onClick={() => setIsDeleteModalOpen(true)}
-                className="mt-2 w-full px-4 py-2 font-semibold text-white bg-red-600 rounded-lg hover:bg-red-800"
-              >
-                Hapus PKS Ini
-              </button>
+              <div className="pt-4 border-t mt-6">
+                <h3 className="font-semibold text-lg text-red-600">
+                  Zona Berbahaya
+                </h3>
+                <button
+                  onClick={() => setIsEmergencyModalOpen(true)}
+                  className="mt-2 w-full px-4 py-2 font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700"
+                >
+                  Ubah Status (Manual)
+                </button>
+                {fileUpload?.fileName && (
+                  <button
+                    onClick={() => setIsFileDeleteModalOpen(true)}
+                    className="mt-2 w-full px-4 py-2 font-semibold text-white bg-orange-600 rounded-lg hover:bg-orange-700"
+                  >
+                    Hapus Lampiran
+                  </button>
+                )}
+                <button
+                  onClick={() => setIsDeleteModalOpen(true)}
+                  className="mt-2 w-full px-4 py-2 font-semibold text-white bg-red-600 rounded-lg hover:bg-red-800"
+                >
+                  Hapus PKS Ini
+                </button>
+              </div>
             </div>
           </div>
         </div>
+
+        {/* Kolom PDF Viewer */}
+        {pdfUrl ? (
+          <PdfViewer fileUrl={pdfUrl} />
+        ) : (
+          properties.status === "menunggu review" && (
+            <div className="bg-gray-100 p-4 rounded-lg flex items-center justify-center h-96">
+              <p className="text-gray-500 text-center">
+                PDF tidak ditemukan, tidak bisa tertampil.
+              </p>
+            </div>
+          )
+        )}
       </div>
 
-      {/* ... (Modal Revisi/Tolak tidak berubah) ... */}
+      {/* ... (semua Modal tidak berubah) ... */}
       <Modal
         isOpen={isCommentModalOpen}
         onClose={() => setIsCommentModalOpen(false)}
@@ -434,8 +446,6 @@ export default function PksDetailPage() {
           </div>
         </form>
       </Modal>
-
-      {/* ... (Modal Darurat tidak berubah) ... */}
       <Modal
         isOpen={isEmergencyModalOpen}
         onClose={() => setIsEmergencyModalOpen(false)}
@@ -501,8 +511,6 @@ export default function PksDetailPage() {
           </div>
         </form>
       </Modal>
-
-      {/* ... (Modal Hapus PKS tidak berubah) ... */}
       <Modal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
@@ -537,8 +545,6 @@ export default function PksDetailPage() {
           </button>
         </div>
       </Modal>
-
-      {/* --- MODAL BARU UNTUK KONFIRMASI HAPUS FILE --- */}
       <Modal
         isOpen={isFileDeleteModalOpen}
         onClose={() => setIsFileDeleteModalOpen(false)}
