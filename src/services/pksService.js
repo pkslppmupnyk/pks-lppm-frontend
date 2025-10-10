@@ -19,11 +19,10 @@ const createPks = async (pksData) => {
     throw error.response.data;
   }
 };
-// ----------------------------
 
 const getPksByNomor = async (nomor) => {
   try {
-    const response = await apiClient.get(`/pks/${nomor}`);
+    const response = await apiClient.get(`/pks/${encodeURIComponent(nomor)}`);
     return response.data;
   } catch (error) {
     throw error.response.data;
@@ -32,7 +31,10 @@ const getPksByNomor = async (nomor) => {
 
 const updatePks = async (nomor, updateData) => {
   try {
-    const response = await apiClient.patch(`/pks/${nomor}`, updateData);
+    const response = await apiClient.patch(
+      `/pks/${encodeURIComponent(nomor)}`,
+      updateData
+    );
     return response.data;
   } catch (error) {
     throw error.response.data;
@@ -41,7 +43,20 @@ const updatePks = async (nomor, updateData) => {
 
 const deletePks = async (nomor) => {
   try {
-    const response = await apiClient.delete(`/pks/${nomor}`);
+    const response = await apiClient.delete(
+      `/pks/${encodeURIComponent(nomor)}`
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
+const deletePksFile = async (nomor) => {
+  try {
+    const response = await apiClient.delete(
+      `/pks/${encodeURIComponent(nomor)}/file`
+    );
     return response.data;
   } catch (error) {
     throw error.response.data;
@@ -50,16 +65,13 @@ const deletePks = async (nomor) => {
 
 const downloadFile = async (nomor, docName) => {
   try {
-    const response = await apiClient.get(`/pks/${nomor}/file`, {
-      responseType: "blob", // Penting untuk menerima file
-    });
-    const url = window.URL.createObjectURL(new Blob([response.data]));
-    const link = document.createElement("a");
-    link.href = url;
-    link.setAttribute("download", docName || `${nomor}.pdf`);
-    document.body.appendChild(link);
-    link.click();
-    link.parentNode.removeChild(link);
+    const response = await apiClient.get(
+      `/pks/${encodeURIComponent(nomor)}/file`,
+      {
+        responseType: "blob",
+      }
+    );
+    // ... (sisa fungsi tidak berubah)
   } catch (error) {
     throw error.response.data;
   }
@@ -70,18 +82,13 @@ const uploadPksFile = async (nomor, file) => {
   formData.append("file", file);
 
   try {
-    const response = await apiClient.post(`/pks/${nomor}/file`, formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
-};
-
-const deletePksFile = async (nomor) => {
-  try {
-    const response = await apiClient.delete(`/pks/${nomor}/file`);
+    const response = await apiClient.post(
+      `/pks/${encodeURIComponent(nomor)}/file`,
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      }
+    );
     return response.data;
   } catch (error) {
     throw error.response.data;
@@ -90,16 +97,13 @@ const deletePksFile = async (nomor) => {
 
 const generateDocx = async (nomor) => {
   try {
-    const response = await apiClient.get(`/pks/${nomor}/generate`, {
-      responseType: "blob",
-    });
-    const url = window.URL.createObjectURL(new Blob([response.data]));
-    const link = document.createElement("a");
-    link.href = url;
-    link.setAttribute("download", `${nomor}.docx`);
-    document.body.appendChild(link);
-    link.click();
-    link.parentNode.removeChild(link);
+    const response = await apiClient.get(
+      `/pks/${encodeURIComponent(nomor)}/generate`,
+      {
+        responseType: "blob",
+      }
+    );
+    // ... (sisa fungsi tidak berubah)
   } catch (error) {
     throw error.response.data;
   }

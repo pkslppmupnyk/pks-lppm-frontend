@@ -53,7 +53,7 @@ const TableRow = ({ pks }) => {
       <td className="py-3 px-4 whitespace-nowrap text-center">
         {pks.content?.nomor ? (
           <Link
-            to={`/track/${pks.content.nomor}`}
+            to={`/track/${encodeURIComponent(pks.content.nomor)}`} // Gunakan encodeURIComponent
             className="bg-green-600 text-white text-xs font-semibold py-1 px-3 rounded-md hover:bg-green-700 transition-colors"
           >
             Detail

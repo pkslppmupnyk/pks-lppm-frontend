@@ -27,7 +27,10 @@ export default function PksCard({ pks }) {
 
   return (
     // Link dibuat dengan pengaman (optional chaining)
-    <Link to={`/admin/pks/${pks?.content?.nomor}`} className="block h-full">
+    <Link
+      to={`/admin/pks/${encodeURIComponent(pks?.content?.nomor)}`}
+      className="block h-full"
+    >
       <div className="p-4 bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-lg hover:border-blue-500 transition-all duration-200 h-full flex flex-col">
         <div className="flex justify-between items-start mb-2">
           {/* Judul PKS */}
