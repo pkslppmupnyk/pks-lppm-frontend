@@ -1,7 +1,7 @@
 // src/services/apiClient.js
 import axios from "axios";
 
-const API_URL = "https://api.pkslppmupnyk.io/api";
+export const API_URL = "https://api.pkslppmupnyk.io/api";
 
 const apiClient = axios.create({
   baseURL: API_URL,
