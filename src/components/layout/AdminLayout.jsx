@@ -14,7 +14,6 @@ export default function AdminLayout() {
           setAdminName(response.data.nama);
         }
       } catch (error) {
-        // Jika token tidak valid, otomatis logout
         handleLogout();
       }
     };
@@ -23,7 +22,7 @@ export default function AdminLayout() {
 
   const handleLogout = () => {
     authService.logout();
-    navigate("/"); // Mengarahkan ke halaman utama
+    navigate("/");
   };
 
   return (
@@ -41,7 +40,16 @@ export default function AdminLayout() {
                 Dasbor PKS
               </Link>
             </li>
-            {/* Tambahkan link navigasi lain di sini nanti */}
+            {/* --- TAMBAHKAN MENU BARU DI SINI --- */}
+            <li className="mb-4">
+              <Link
+                to="/admin/register-admin"
+                className="block p-2 rounded hover:bg-gray-700"
+              >
+                Tambah Admin Baru
+              </Link>
+            </li>
+            {/* ---------------------------------- */}
           </ul>
         </nav>
       </aside>

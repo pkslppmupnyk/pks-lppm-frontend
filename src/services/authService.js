@@ -1,6 +1,15 @@
 // src/services/authService.js
 import apiClient from "./apiClient";
 
+const register = async (userData) => {
+  try {
+    const response = await apiClient.post("/auth/register", userData);
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
 const login = async (username, password) => {
   try {
     const response = await apiClient.post("/auth/login", {
@@ -30,6 +39,7 @@ const getProfile = async () => {
 };
 
 const authService = {
+  register,
   login,
   logout,
   getProfile,

@@ -15,6 +15,7 @@ import LoginPage from "./pages/LoginPage";
 import AdminDashboard from "./pages/AdminDashboard";
 import PksDetailPage from "./pages/PksDetailPage";
 import EditPksPage from "./pages/EditPksPage";
+import RegisterAdminPage from "./pages/RegisterAdminPage";
 
 // Komponen utilitas
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -37,6 +38,7 @@ export default function App() {
             <Route path="dashboard" element={<AdminDashboard />} />
             <Route path="pks/:nomor" element={<PksDetailPage />} />
             <Route path="pks/:nomor/edit" element={<EditPksPage />} />
+            <Route path="register-admin" element={<RegisterAdminPage />} />
             <Route index element={<Navigate to="/admin/dashboard" />} />
           </Route>
         </Route>
