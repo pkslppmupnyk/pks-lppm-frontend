@@ -74,7 +74,6 @@ export default function PksDetailPage() {
     setIsCommentModalOpen(true);
   };
 
-  // --- FUNGSI YANG DIPERBAIKI ---
   // Fungsi generik untuk update status
   const handleStatusUpdate = async (status, commentText) => {
     setUpdateLoading(true);
@@ -143,7 +142,6 @@ export default function PksDetailPage() {
       case "draft":
         return (
           <>
-            {/* Tombol Edit hanya muncul saat status draft */}
             <Link
               to={`/admin/pks/${nomor}/edit`}
               className="block text-center w-full px-4 py-2 font-semibold text-white bg-gray-600 rounded-lg hover:bg-gray-700"
@@ -202,14 +200,30 @@ export default function PksDetailPage() {
         );
       case "menunggu review":
         return (
-          <button
-            onClick={() =>
-              handleStatusUpdate("approved", "PKS telah disetujui.")
-            }
-            className="w-full px-4 py-2 font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700"
-          >
-            Setujui PKS
-          </button>
+          <>
+            <button
+              onClick={() =>
+                handleStatusUpdate("approved", "PKS telah disetujui.")
+              }
+              className="w-full px-4 py-2 font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700"
+            >
+              Setujui PKS
+            </button>
+            {/* --- TOMBOL BARU DITAMBAHKAN DI SINI --- */}
+            <button
+              onClick={() =>
+                openCommentModal({
+                  title: "Revisi Dokumen Unggahan",
+                  newStatus: "menunggu dokumen",
+                  commentPrefix: "upload file ditolak: ",
+                  commentRequired: true,
+                })
+              }
+              className="w-full px-4 py-2 font-semibold text-white bg-yellow-500 rounded-lg hover:bg-yellow-600"
+            >
+              Kembalikan ke Menunggu Dokumen
+            </button>
+          </>
         );
       default:
         return (
