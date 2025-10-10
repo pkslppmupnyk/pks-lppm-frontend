@@ -74,6 +74,7 @@ export default function PksDetailPage() {
     setIsCommentModalOpen(true);
   };
 
+  // --- FUNGSI YANG DIPERBAIKI ---
   // Fungsi generik untuk update status
   const handleStatusUpdate = async (status, commentText) => {
     setUpdateLoading(true);
@@ -82,7 +83,10 @@ export default function PksDetailPage() {
       properties: {
         status: status,
         email: pks.properties.email,
-        comment: commentText !== undefined ? commentText : pks.properties.comment,
+        comment:
+          commentText !== undefined
+            ? commentText.trim()
+            : pks.properties.comment,
       },
     };
 
@@ -91,14 +95,26 @@ export default function PksDetailPage() {
       setIsCommentModalOpen(false);
       setIsEmergencyModalOpen(false);
       fetchPks();
-    } catch (err)
-      const fullComment = modalContent.commentPrefix
-        ? `${modalContent.commentPrefix}${comment}`
-        : comment;
-      handleStatusUpdate(modalContent.newStatus, fullComment);
+    } catch (err) {
+      setUpdateError(err.message || "Gagal memperbarui status.");
+    } finally {
+      setUpdateLoading(false);
     }
   };
-  
+
+  // Handler untuk form di dalam modal komentar
+  const handleCommentModalSubmit = (e) => {
+    e.preventDefault();
+    if (modalContent.commentRequired && !comment.trim()) {
+      setUpdateError("Komentar wajib diisi untuk tindakan ini.");
+      return;
+    }
+    const fullComment = modalContent.commentPrefix
+      ? `${modalContent.commentPrefix}${comment}`
+      : comment;
+    handleStatusUpdate(modalContent.newStatus, fullComment);
+  };
+
   // Handler untuk modal darurat
   const handleEmergencyStatusUpdate = (e) => {
     e.preventDefault();
@@ -127,6 +143,7 @@ export default function PksDetailPage() {
       case "draft":
         return (
           <>
+            {/* Tombol Edit hanya muncul saat status draft */}
             <Link
               to={`/admin/pks/${nomor}/edit`}
               className="block text-center w-full px-4 py-2 font-semibold text-white bg-gray-600 rounded-lg hover:bg-gray-700"
@@ -134,7 +151,12 @@ export default function PksDetailPage() {
               Edit Data PKS
             </Link>
             <button
-              onClick={() => handleStatusUpdate("menunggu dokumen", "Draft disetujui, menunggu unggah dokumen.")}
+              onClick={() =>
+                handleStatusUpdate(
+                  "menunggu dokumen",
+                  "Draft disetujui, menunggu unggah dokumen."
+                )
+              }
               className="w-full px-4 py-2 font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700"
             >
               Setujui Draft
@@ -170,7 +192,9 @@ export default function PksDetailPage() {
       case "menunggu dokumen":
         return (
           <button
-            onClick={() => handleStatusUpdate("draft", "Dikembalikan ke draft oleh admin.")}
+            onClick={() =>
+              handleStatusUpdate("draft", "Dikembalikan ke draft oleh admin.")
+            }
             className="w-full px-4 py-2 font-semibold text-white bg-gray-600 rounded-lg hover:bg-gray-700"
           >
             Kembalikan ke Draft
@@ -179,7 +203,9 @@ export default function PksDetailPage() {
       case "menunggu review":
         return (
           <button
-            onClick={() => handleStatusUpdate("approved", "PKS telah disetujui.")}
+            onClick={() =>
+              handleStatusUpdate("approved", "PKS telah disetujui.")
+            }
             className="w-full px-4 py-2 font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700"
           >
             Setujui PKS
@@ -187,9 +213,9 @@ export default function PksDetailPage() {
         );
       default:
         return (
-            <div className="p-3 text-center bg-gray-100 text-gray-600 rounded-md text-sm">
-                Tidak ada aksi status yang tersedia.
-            </div>
+          <div className="p-3 text-center bg-gray-100 text-gray-600 rounded-md text-sm">
+            Tidak ada aksi status yang tersedia.
+          </div>
         );
     }
   };
@@ -204,7 +230,8 @@ export default function PksDetailPage() {
     properties = {},
     fileUpload = {},
   } = pks;
-  const handleDownload = () => pksService.downloadFile(nomor, fileUpload?.docName);
+  const handleDownload = () =>
+    pksService.downloadFile(nomor, fileUpload?.docName);
   const handleGenerate = () => pksService.generateDocx(nomor);
 
   return (
@@ -223,27 +250,47 @@ export default function PksDetailPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="md:col-span-2 space-y-4">
             <dl>
-                <DetailRow label="Status Saat Ini" value={properties?.status?.toUpperCase()} />
-                <DetailRow label="Komentar Terakhir" value={properties?.comment} />
-                <DetailRow label="Instansi Pihak Kedua" value={pihakKedua?.instansi} />
-                <DetailRow label="Penanggung Jawab" value={`${pihakKedua?.nama || ""} (${pihakKedua?.jabatan || ""})`} />
-                <DetailRow label="Email Kontak" value={properties?.email} />
-                <DetailRow
-                    label="Tanggal Berlaku"
-                    value={
-                    content?.tanggal && content?.tanggalKadaluarsa
-                        ? `${new Date(content.tanggal).toLocaleDateString("id-ID")} - ${new Date(content.tanggalKadaluarsa).toLocaleDateString("id-ID")}`
-                        : "-"
-                    }
-                />
-                <DetailRow label="Alamat" value={pihakKedua?.alamat} />
+              <DetailRow
+                label="Status Saat Ini"
+                value={properties?.status?.toUpperCase()}
+              />
+              <DetailRow
+                label="Komentar Terakhir"
+                value={properties?.comment}
+              />
+              <DetailRow
+                label="Instansi Pihak Kedua"
+                value={pihakKedua?.instansi}
+              />
+              <DetailRow
+                label="Penanggung Jawab"
+                value={`${pihakKedua?.nama || ""} (${
+                  pihakKedua?.jabatan || ""
+                })`}
+              />
+              <DetailRow label="Email Kontak" value={properties?.email} />
+              <DetailRow
+                label="Tanggal Berlaku"
+                value={
+                  content?.tanggal && content?.tanggalKadaluarsa
+                    ? `${new Date(content.tanggal).toLocaleDateString(
+                        "id-ID"
+                      )} - ${new Date(
+                        content.tanggalKadaluarsa
+                      ).toLocaleDateString("id-ID")}`
+                    : "-"
+                }
+              />
+              <DetailRow label="Alamat" value={pihakKedua?.alamat} />
             </dl>
           </div>
           <div className="md:col-span-1 space-y-4">
             <h3 className="font-semibold text-lg border-b pb-2">Aksi Utama</h3>
             {renderActionButtons()}
-            
-            <h3 className="font-semibold text-lg border-b pb-2 pt-4">Aksi Dokumen</h3>
+
+            <h3 className="font-semibold text-lg border-b pb-2 pt-4">
+              Aksi Dokumen
+            </h3>
             <button
               onClick={handleGenerate}
               className="w-full px-4 py-2 font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700"
@@ -258,12 +305,12 @@ export default function PksDetailPage() {
                 Download Lampiran (.pdf)
               </button>
             )}
-            
+
             <div className="pt-4 border-t mt-6">
               <h3 className="font-semibold text-lg text-red-600">
                 Zona Berbahaya
               </h3>
-               <button
+              <button
                 onClick={() => setIsEmergencyModalOpen(true)}
                 className="mt-2 w-full px-4 py-2 font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700"
               >
@@ -286,28 +333,40 @@ export default function PksDetailPage() {
         onClose={() => setIsCommentModalOpen(false)}
         title={modalContent.title}
       >
-        <form onSubmit={handleModalSubmit}>
-            <p className="text-sm text-gray-600 mb-4">
-                {modalContent.commentRequired 
-                ? "Anda wajib memberikan alasan atau komentar untuk tindakan ini."
-                : "Anda bisa menambahkan komentar (opsional)."}
-            </p>
-            <textarea
-                id="comment"
-                rows="4"
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Tuliskan komentar Anda di sini..."
-                required={modalContent.commentRequired}
-            ></textarea>
-            {updateError && <p className="text-sm text-red-600 mt-2">{updateError}</p>}
-            <div className="mt-6 flex justify-end space-x-2">
-                <button type="button" onClick={() => setIsCommentModalOpen(false)} className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300">Batal</button>
-                <button type="submit" disabled={updateLoading} className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:bg-gray-400">
-                    {updateLoading ? "Menyimpan..." : "Kirim"}
-                </button>
-            </div>
+        <form onSubmit={handleCommentModalSubmit}>
+          <p className="text-sm text-gray-600 mb-4">
+            {modalContent.commentRequired
+              ? "Anda wajib memberikan alasan atau komentar untuk tindakan ini."
+              : "Anda bisa menambahkan komentar (opsional)."}
+          </p>
+          <textarea
+            id="comment"
+            rows="4"
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="Tuliskan komentar Anda di sini..."
+            required={modalContent.commentRequired}
+          ></textarea>
+          {updateError && (
+            <p className="text-sm text-red-600 mt-2">{updateError}</p>
+          )}
+          <div className="mt-6 flex justify-end space-x-2">
+            <button
+              type="button"
+              onClick={() => setIsCommentModalOpen(false)}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300"
+            >
+              Batal
+            </button>
+            <button
+              type="submit"
+              disabled={updateLoading}
+              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:bg-gray-400"
+            >
+              {updateLoading ? "Menyimpan..." : "Kirim"}
+            </button>
+          </div>
         </form>
       </Modal>
 
@@ -320,24 +379,58 @@ export default function PksDetailPage() {
         <form onSubmit={handleEmergencyStatusUpdate}>
           <div className="space-y-4">
             <div>
-              <label htmlFor="status" className="block mb-2 text-sm font-medium text-gray-900">
+              <label
+                htmlFor="status"
+                className="block mb-2 text-sm font-medium text-gray-900"
+              >
                 Status Baru
               </label>
-              <select id="status" value={newStatus} onChange={(e) => setNewStatus(e.target.value)} className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-                {STATUS_OPTIONS.map((opt) => (<option key={opt} value={opt}>{opt}</option>))}
+              <select
+                id="status"
+                value={newStatus}
+                onChange={(e) => setNewStatus(e.target.value)}
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+              >
+                {STATUS_OPTIONS.map((opt) => (
+                  <option key={opt} value={opt}>
+                    {opt}
+                  </option>
+                ))}
               </select>
             </div>
             <div>
-              <label htmlFor="comment" className="block mb-2 text-sm font-medium text-gray-900">
+              <label
+                htmlFor="emergency-comment"
+                className="block mb-2 text-sm font-medium text-gray-900"
+              >
                 Komentar (Opsional)
               </label>
-              <textarea id="comment" rows="4" value={comment} onChange={(e) => setComment(e.target.value)} className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500" placeholder="Tambahkan catatan..."></textarea>
+              <textarea
+                id="emergency-comment"
+                rows="4"
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Tambahkan catatan..."
+              ></textarea>
             </div>
-            {updateError && (<p className="text-sm text-red-600">{updateError}</p>)}
+            {updateError && (
+              <p className="text-sm text-red-600">{updateError}</p>
+            )}
           </div>
           <div className="mt-6 flex justify-end space-x-2">
-            <button type="button" onClick={() => setIsEmergencyModalOpen(false)} className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300">Batal</button>
-            <button type="submit" disabled={updateLoading} className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:bg-gray-400">
+            <button
+              type="button"
+              onClick={() => setIsEmergencyModalOpen(false)}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300"
+            >
+              Batal
+            </button>
+            <button
+              type="submit"
+              disabled={updateLoading}
+              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:bg-gray-400"
+            >
               {updateLoading ? "Menyimpan..." : "Simpan Perubahan"}
             </button>
           </div>
@@ -355,11 +448,26 @@ export default function PksDetailPage() {
             Apakah Anda benar-benar yakin ingin menghapus PKS dengan nomor{" "}
             <strong>{nomor}</strong>? Tindakan ini tidak dapat diurungkan.
           </p>
-          {deleteError && (<p className="mt-4 text-sm text-center text-red-600">{deleteError}</p>)}
+          {deleteError && (
+            <p className="mt-4 text-sm text-center text-red-600">
+              {deleteError}
+            </p>
+          )}
         </div>
         <div className="mt-6 flex justify-end space-x-2">
-          <button type="button" onClick={() => setIsDeleteModalOpen(false)} className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300">Batal</button>
-          <button type="button" onClick={handleDelete} disabled={deleteLoading} className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:bg-gray-400">
+          <button
+            type="button"
+            onClick={() => setIsDeleteModalOpen(false)}
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300"
+          >
+            Batal
+          </button>
+          <button
+            type="button"
+            onClick={handleDelete}
+            disabled={deleteLoading}
+            className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:bg-gray-400"
+          >
             {deleteLoading ? "Menghapus..." : "Ya, Hapus"}
           </button>
         </div>
