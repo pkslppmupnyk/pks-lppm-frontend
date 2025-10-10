@@ -209,7 +209,6 @@ export default function PksDetailPage() {
             >
               Setujui PKS
             </button>
-            {/* --- TOMBOL BARU DITAMBAHKAN DI SINI --- */}
             <button
               onClick={() =>
                 openCommentModal({
@@ -311,14 +310,42 @@ export default function PksDetailPage() {
             >
               Generate Dokumen (.docx)
             </button>
+
+            {/* --- BLOK BARU DITAMBAHKAN DI SINI --- */}
             {fileUpload?.fileName && (
-              <button
-                onClick={handleDownload}
-                className="w-full px-4 py-2 font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700"
-              >
-                Download Lampiran (.pdf)
-              </button>
+              <div className="mt-4 pt-4 border-t">
+                <h4 className="text-sm font-semibold text-gray-600 mb-2">
+                  File Tersimpan:
+                </h4>
+                <div className="flex items-center bg-gray-50 p-2 rounded-md">
+                  {/* SVG Icon untuk file */}
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6 text-red-500 mr-3"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    />
+                  </svg>
+                  <span className="text-sm text-gray-800 truncate">
+                    {fileUpload.docName}
+                  </span>
+                </div>
+                <button
+                  onClick={handleDownload}
+                  className="mt-2 w-full px-4 py-2 font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700"
+                >
+                  Unduh Lampiran
+                </button>
+              </div>
             )}
+            {/* --- AKHIR BLOK BARU --- */}
 
             <div className="pt-4 border-t mt-6">
               <h3 className="font-semibold text-lg text-red-600">
@@ -341,7 +368,7 @@ export default function PksDetailPage() {
         </div>
       </div>
 
-      {/* Modal untuk Revisi / Tolak */}
+      {/* ... (semua kode Modal tidak berubah) ... */}
       <Modal
         isOpen={isCommentModalOpen}
         onClose={() => setIsCommentModalOpen(false)}
@@ -384,7 +411,6 @@ export default function PksDetailPage() {
         </form>
       </Modal>
 
-      {/* Modal untuk Ubah Status Darurat */}
       <Modal
         isOpen={isEmergencyModalOpen}
         onClose={() => setIsEmergencyModalOpen(false)}
@@ -451,7 +477,6 @@ export default function PksDetailPage() {
         </form>
       </Modal>
 
-      {/* Modal untuk Konfirmasi Hapus */}
       <Modal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
