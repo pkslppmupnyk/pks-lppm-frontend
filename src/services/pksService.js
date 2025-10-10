@@ -41,6 +41,17 @@ const updatePks = async (nomor, updateData) => {
   }
 };
 
+const submitForReview = async (nomor) => {
+  try {
+    const response = await apiClient.post(
+      `/pks/${encodeURIComponent(nomor)}/submit-review`
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
 const deletePks = async (nomor) => {
   try {
     const response = await apiClient.delete(
@@ -124,7 +135,8 @@ const pksService = {
   getAllPks,
   createPks,
   getPksByNomor, // <-- Daftarkan
-  updatePks, // <-- Daftarkan
+  updatePks,
+  submitForReview, // <-- Daftarkan
   downloadFile, // <-- Daftarkan
   generateDocx,
   deletePks,

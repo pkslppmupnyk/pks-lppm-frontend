@@ -71,12 +71,19 @@ export default function PksTrackingPage() {
     setUploading(true);
     setUploadMessage("");
     try {
+      // Langkah 1: Unggah file
       await pksService.uploadPksFile(nomor, selectedFile);
-      setUploadMessage("File berhasil diunggah!");
-      fetchPks(); // Refresh data untuk menampilkan info file baru
+
+      // Langkah 2: Panggil endpoint baru untuk ubah status
+      await pksService.submitForReview(nomor);
+
+      setUploadMessage(
+        "File berhasil diunggah dan PKS telah dikirim untuk direview!"
+      );
+      fetchPks(); // Refresh data untuk menampilkan status baru
     } catch (err) {
       setUploadMessage(
-        "Gagal mengunggah file: " + (err.message || "Coba lagi nanti.")
+        "Gagal: " + (err.message || "Terjadi kesalahan. Coba lagi nanti.")
       );
     } finally {
       setUploading(false);
