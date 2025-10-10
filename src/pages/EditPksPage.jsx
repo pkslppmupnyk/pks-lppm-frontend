@@ -1,0 +1,261 @@
+// src/pages/EditPksPage.jsx
+
+import React, { useState, useEffect } from "react";
+import pksService from "../services/pksService";
+import { useParams, useNavigate, Link } from "react-router-dom";
+
+export default function EditPksPage() {
+  const { nomor } = useParams();
+  const navigate = useNavigate();
+
+  const [formData, setFormData] = useState(null);
+  const [originalPks, setOriginalPks] = useState(null); // Simpan data asli di sini
+
+  const [loading, setLoading] = useState(true);
+  const [saveLoading, setSaveLoading] = useState(false);
+  const [message, setMessage] = useState({ type: "", text: "" });
+
+  useEffect(() => {
+    const fetchPksData = async () => {
+      if (!nomor) return;
+      try {
+        setLoading(true);
+        const pksData = await pksService.getPksByNomor(nomor);
+        setFormData(pksData);
+        setOriginalPks(pksData); // Simpan data asli untuk menjaga nomor
+      } catch (error) {
+        setMessage({ type: "error", text: "Gagal memuat data PKS." });
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPksData();
+  }, [nomor]);
+
+  const handleChange = (e) => {
+    const { name, value, dataset } = e.target;
+    const { section } = dataset;
+
+    setFormData((prev) => {
+      if (section === "content") {
+        return {
+          ...prev,
+          content: {
+            ...prev.content,
+            nomor: originalPks.content.nomor, // 🔒 Selalu preserve nomor
+            [name]: value,
+          },
+        };
+      }
+
+      return {
+        ...prev,
+        [section]: {
+          ...prev[section],
+          [name]: value,
+        },
+      };
+    });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSaveLoading(true);
+    setMessage({ type: "", text: "" });
+
+    // --- PENCEGAHAN UTAMA ADA DI SINI ---
+    const payload = {
+      content: {
+        ...formData.content,
+        nomor: originalPks.content.nomor, // Selalu sertakan nomor asli!
+      },
+      pihakKedua: formData.pihakKedua,
+      properties: formData.properties,
+    };
+    // ------------------------------------
+
+    try {
+      await pksService.updatePks(nomor, payload);
+      alert("Data PKS berhasil diperbarui!");
+      navigate(`/admin/pks/${nomor}`);
+    } catch (err) {
+      setMessage({
+        type: "error",
+        text: err.message || "Gagal menyimpan perubahan.",
+      });
+    } finally {
+      setSaveLoading(false);
+    }
+  };
+
+  const inputClass =
+    "w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500";
+
+  if (loading)
+    return <div className="text-center p-8">Memuat form edit...</div>;
+  if (!formData)
+    return (
+      <div className="text-center p-8 text-red-500">
+        {message.text || "Data tidak ditemukan."}
+      </div>
+    );
+
+  return (
+    <div className="bg-gray-50 min-h-screen flex items-center justify-center p-4">
+      <div className="w-full max-w-3xl p-8 space-y-6 bg-white rounded-lg shadow-md">
+        <div className="text-center">
+          <h2 className="text-3xl font-bold text-gray-800">
+            Edit Perjanjian Kerja Sama
+          </h2>
+          <p className="text-gray-500">{nomor}</p>
+        </div>
+        <form onSubmit={handleSubmit} className="space-y-8">
+          <fieldset className="p-4 border rounded-md">
+            <legend className="px-2 font-semibold text-lg text-gray-700">
+              Detail Perjanjian
+            </legend>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label>Judul Kerjasama*</label>
+                <input
+                  type="text"
+                  name="judul"
+                  value={formData.content.judul}
+                  data-section="content"
+                  onChange={handleChange}
+                  required
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label>Email Pemberitahuan*</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.properties.email}
+                  data-section="properties"
+                  onChange={handleChange}
+                  required
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label>Tanggal Mulai*</label>
+                <input
+                  type="date"
+                  name="tanggal"
+                  value={formData.content.tanggal?.substring(0, 10)}
+                  data-section="content"
+                  onChange={handleChange}
+                  required
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label>Tanggal Kadaluarsa*</label>
+                <input
+                  type="date"
+                  name="tanggalKadaluarsa"
+                  value={formData.content.tanggalKadaluarsa?.substring(0, 10)}
+                  data-section="content"
+                  onChange={handleChange}
+                  required
+                  className={inputClass}
+                />
+              </div>
+            </div>
+          </fieldset>
+          <fieldset className="p-4 border rounded-md">
+            <legend className="px-2 font-semibold text-lg text-gray-700">
+              Informasi Pihak Kedua
+            </legend>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label>Nama Instansi*</label>
+                <input
+                  type="text"
+                  name="instansi"
+                  value={formData.pihakKedua.instansi}
+                  data-section="pihakKedua"
+                  onChange={handleChange}
+                  required
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label>Nomor Dokumen Pihak Kedua</label>
+                <input
+                  type="text"
+                  name="nomor"
+                  value={formData.pihakKedua.nomor}
+                  data-section="pihakKedua"
+                  onChange={handleChange}
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label>Nama Penanggung Jawab*</label>
+                <input
+                  type="text"
+                  name="nama"
+                  value={formData.pihakKedua.nama}
+                  data-section="pihakKedua"
+                  onChange={handleChange}
+                  required
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label>Jabatan*</label>
+                <input
+                  type="text"
+                  name="jabatan"
+                  value={formData.pihakKedua.jabatan}
+                  data-section="pihakKedua"
+                  onChange={handleChange}
+                  required
+                  className={inputClass}
+                />
+              </div>
+              <div className="md:col-span-2">
+                <label>Alamat Instansi*</label>
+                <textarea
+                  name="alamat"
+                  value={formData.pihakKedua.alamat}
+                  data-section="pihakKedua"
+                  onChange={handleChange}
+                  required
+                  className={inputClass}
+                ></textarea>
+              </div>
+            </div>
+          </fieldset>
+          {message.text && (
+            <div
+              className={`p-4 rounded-md text-center ${
+                message.type === "error" ? "bg-red-100 text-red-800" : ""
+              }`}
+            >
+              {message.text}
+            </div>
+          )}
+          <div className="flex items-center justify-end gap-4">
+            <Link
+              to={`/admin/pks/${nomor}`}
+              className="px-6 py-2 font-semibold text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300"
+            >
+              Batal
+            </Link>
+            <button
+              type="submit"
+              disabled={saveLoading}
+              className="px-6 py-2 font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:bg-gray-400"
+            >
+              {saveLoading ? "Menyimpan..." : "Simpan Perubahan"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
