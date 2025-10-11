@@ -51,9 +51,9 @@ const TableRow = ({ pks }) => {
         <StatusBadge status={pks.properties?.status} />
       </td>
       <td className="py-3 px-4 whitespace-nowrap text-center">
-        {pks.content?.nomor ? (
+        {pks.content?.nomor.replace(/-/g, "/") ? (
           <Link
-            to={`/track/${encodeURIComponent(pks.content.nomor)}`} // Gunakan encodeURIComponent
+            to={`/track/${pks.content.nomor}`} // Gunakan encodeURIComponent
             className="bg-green-600 text-white text-xs font-semibold py-1 px-3 rounded-md hover:bg-green-700 transition-colors"
           >
             Detail
