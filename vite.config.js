@@ -1,12 +1,29 @@
-// vite.config.js
-
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import tailwindcss from "@tailwindcss/vite"; // <-- 1. Impor plugin baru
+import tailwindcss from "@tailwindcss/vite";
+import path from "path";
 
 export default defineConfig({
-  plugins: [
-    react(),
-    tailwindcss(), // <-- 2. Tambahkan plugin di sini
-  ],
+  plugins: [react(), tailwindcss()],
+  build: {
+    outDir: "/var/www/pks-frontend",
+    rollupOptions: {
+      // Mengatasi error "fsevents"
+      external: ["fsevents"],
+    },
+    emptyOutDir: true,
+  },
+  resolve: {
+    alias: {
+      // Mengatasi error "./pkg" dari set-cookie-parser
+      "set-cookie-parser": path.resolve(
+        __dirname,
+        "node_modules/set-cookie-parser/lib/set-cookie.js"
+      ),
+    },
+  },
+  optimizeDeps: {
+    // Mengatasi error dari lightningcss
+    exclude: ["lightningcss"],
+  },
 });
