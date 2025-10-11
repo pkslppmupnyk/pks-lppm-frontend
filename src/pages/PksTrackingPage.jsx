@@ -209,9 +209,17 @@ export default function PksTrackingPage() {
                 <h3 className="font-semibold text-lg">
                   Upload Dokumen Lampiran
                 </h3>
-                <p className="text-sm text-gray-500 mb-2">
-                  Silakan unggah dokumen yang diperlukan (hanya .pdf).
-                </p>
+                   <div className="text-sm text-gray-500 mb-2">
+                     <p>
+                       Silakan cetak dokumen ini dalam dua rangkap. Pastikan:
+                     </p>
+                     <ol className="list-decimal list-inside ml-4">
+                       <li>Tempelkan materai pada rangkap pertama (pihak pertama).</li>
+                       <li>Tempelkan materai pada rangkap kedua (pihak kedua).</li>
+                       <li>Pihak kedua dimohon menandatangani setiap rangkap sesuai posisi yang tertera.</li>
+                     </ol>
+                     <p className="mt-2">Unggah dokumen dalam format PDF (.pdf) saja.</p>
+                   </div>
                 <input
                   type="file"
                   accept=".pdf"
