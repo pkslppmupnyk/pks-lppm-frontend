@@ -70,6 +70,10 @@ export default function PksDetailPage() {
     setIsCommentModalOpen(true);
   };
 
+  // src/pages/PksDetailPage.jsx
+
+  // ...
+
   const handleStatusUpdate = async (status, commentText) => {
     setUpdateLoading(true);
     setUpdateError("");
@@ -85,6 +89,12 @@ export default function PksDetailPage() {
     };
     try {
       await pksService.updatePks(nomor, payload);
+
+      // --- TAMBAHKAN PEMANGGILAN NOTIFIKASI DI SINI ---
+      // Kirim notifikasi setelah status berhasil diubah
+      await pksService.sendNotification(nomor);
+      // ---------------------------------------------
+
       setIsCommentModalOpen(false);
       setIsEmergencyModalOpen(false);
       fetchPks();
@@ -94,6 +104,8 @@ export default function PksDetailPage() {
       setUpdateLoading(false);
     }
   };
+
+  // ... (sisa kode tidak berubah)
 
   const handleCommentModalSubmit = (e) => {
     e.preventDefault();

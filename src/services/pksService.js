@@ -1,4 +1,5 @@
 // src/services/pksService.js
+import { send } from "vite";
 import apiClient from "./apiClient";
 
 const getAllPks = async (params) => {
@@ -120,14 +121,15 @@ const generateDocx = async (nomor) => {
   }
 };
 
-// ... (di dalam pksService.js)
-const sendEmail = async (pksId) => {
+const sendNotification = async (nomor) => {
   try {
-    // Endpoint ini belum ada di dokumentasi Anda, pastikan Anda membuatnya di backend
-    const response = await apiClient.post(`/pks/id/${pksId}/send-email`);
+    const response = await apiClient.post(
+      `/pks/${encodeURIComponent(nomor)}/send-notification`
+    );
     return response.data;
   } catch (error) {
-    throw error.response.data;
+    // Kita tidak melempar error agar tidak mengganggu UI jika email gagal
+    console.error("Failed to send notification email:", error);
   }
 };
 
@@ -140,7 +142,7 @@ const pksService = {
   downloadFile, // <-- Daftarkan
   generateDocx,
   deletePks,
-  sendEmail,
+  sendNotification,
   uploadPksFile,
   deletePksFile, // <-- Daftarkan
 };
