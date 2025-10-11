@@ -42,31 +42,38 @@ const TableRow = ({ pks }) => {
       <td className="py-4 px-4 sm:px-6 whitespace-normal break-words text-sm">
         {pks.pihakKedua?.instansi || "-"}
       </td>
-      <td className="py-4 px-4 sm:px-6 whitespace-nowrap text-sm">
-        {pks.content?.tanggal
-          ? new Date(pks.content.tanggal).toLocaleDateString("id-ID")
-          : "-"}
-      </td>
-      <td className="py-4 px-4 sm:px-6">
-        <StatusBadge status={pks.properties?.status} />
-      </td>
-      <td className="py-4 px-4 sm:px-6 whitespace-nowrap text-center">
-        {pks.content?.nomor.replace(/-/g, "/") ? (
-          <Link
-            to={`/track/${pks.content.nomor}`} // Gunakan encodeURIComponent
-            className="bg-green-600 text-white text-xs font-semibold py-1 px-3 rounded-md hover:bg-green-700 transition-colors"
-          >
-            Detail
-          </Link>
-        ) : (
-          <span
-            className="text-gray-400 text-xs italic cursor-not-allowed"
-            title="Detail tidak tersedia karena Nomor PKS tidak ada"
-          >
-            N/A
-          </span>
-        )}
-      </td>
+      <td className="py-4 px-2 sm:px-6 text-sm hidden sm:table-cell">
+  {pks.content?.tanggal
+    ? new Date(pks.content.tanggal).toLocaleDateString("id-ID")
+    : "-"}
+</td>
+      <td className="py-4 px-2 sm:px-6 text-center">
+  <div className="flex flex-col sm:flex-row gap-2 items-center">
+    <StatusBadge status={pks.properties?.status} />
+    <div className="sm:hidden text-xs text-gray-500">
+      {pks.content?.tanggal
+        ? new Date(pks.content.tanggal).toLocaleDateString("id-ID")
+        : "-"}
+    </div>
+  </div>
+</td>
+      <td className="py-4 px-2 sm:px-6 whitespace-nowrap text-center">
+  {pks.content?.nomor.replace(/-/g, "/") ? (
+    <Link
+      to={`/track/${pks.content.nomor}`}
+      className="bg-green-600 text-white text-xs font-semibold py-1 px-2 sm:px-3 rounded-md hover:bg-green-700 transition-colors inline-block min-w-[60px]"
+    >
+      Detail
+    </Link>
+  ) : (
+    <span
+      className="text-gray-400 text-xs italic cursor-not-allowed"
+      title="Detail tidak tersedia karena Nomor PKS tidak ada"
+    >
+      N/A
+    </span>
+  )}
+</td>
     </tr>
   );
 };
