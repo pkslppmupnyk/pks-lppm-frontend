@@ -18,12 +18,13 @@ export default function PksCard({ pks }) {
       })
     : "-";
 
-  // Tampilkan dengan '/', link tetap pakai '-'
+  // Tampilkan nomor dengan format '/', link tetap menggunakan ID
   const displayNomor =
     pks?.content?.nomor?.replace(/-/g, "/") || "Tidak ada nomor";
 
   return (
-    <Link to={`/admin/pks/${pks?.content?.nomor}`} className="block h-full">
+    // Link diubah untuk menggunakan pks._id
+    <Link to={`/admin/pks/${pks?._id}`} className="block h-full">
       <div className="p-4 bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-lg hover:border-blue-500 transition-all duration-200 h-full flex flex-col">
         <div className="flex justify-between items-start mb-2">
           <h3 className="font-bold text-gray-800 pr-2 flex-1">

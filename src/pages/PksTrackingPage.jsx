@@ -36,7 +36,7 @@ const StatusBadge = ({ status }) => {
 };
 
 export default function PksTrackingPage() {
-  const { nomor } = useParams();
+  const { id } = useParams(); // Diubah dari nomor ke id
   const [pks, setPks] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -45,17 +45,17 @@ export default function PksTrackingPage() {
   const [uploadMessage, setUploadMessage] = useState("");
 
   const fetchPks = useCallback(async () => {
-    if (!nomor) return;
+    if (!id) return;
     try {
       setLoading(true);
-      const response = await pksService.getPksByNomor(nomor);
+      const response = await pksService.getPksById(id); // Menggunakan getPksById
       setPks(response);
     } catch (err) {
       setError("Gagal mengambil data PKS atau data tidak ditemukan.");
     } finally {
       setLoading(false);
     }
-  }, [nomor]);
+  }, [id]); // Dependency diubah ke id
 
   useEffect(() => {
     fetchPks();
@@ -71,8 +71,8 @@ export default function PksTrackingPage() {
     setUploading(true);
     setUploadMessage("");
     try {
-      await pksService.uploadPksFile(nomor, selectedFile);
-      await pksService.submitForReview(nomor);
+      await pksService.uploadPksFile(id, selectedFile); // Menggunakan id
+      await pksService.submitForReview(id); // Menggunakan id
       setUploadMessage(
         "File berhasil diunggah dan PKS telah dikirim untuk direview!"
       );
@@ -160,7 +160,7 @@ export default function PksTrackingPage() {
               Aksi yang Tersedia
             </h3>
             <button
-              onClick={() => pksService.generateDocx(content.nomor)}
+              onClick={() => pksService.generateDocx(pks._id, content.nomor)}
               className="w-full px-4 py-2 font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
             >
               Generate Dokumen (.docx)
@@ -191,7 +191,7 @@ export default function PksTrackingPage() {
                 </div>
                 <button
                   onClick={() =>
-                    pksService.downloadFile(content.nomor, fileUpload.docName)
+                    pksService.downloadFile(pks._id, fileUpload.docName)
                   }
                   className="mt-2 w-full px-4 py-2 font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors"
                 >

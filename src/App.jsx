@@ -28,7 +28,8 @@ export default function App() {
         <Route element={<PublicLayout />}>
           <Route path="/" element={<PublicDashboard />} />
           <Route path="/submit-pks" element={<SubmitPksPage />} />
-          <Route path="/track/:nomor" element={<PksTrackingPage />} />
+          {/* Diubah ke :id */}
+          <Route path="/track/:id" element={<PksTrackingPage />} />
         </Route>
 
         {/* === RUTE ADMIN & LOGIN === */}
@@ -36,9 +37,11 @@ export default function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="/admin" element={<AdminLayout />}>
             <Route path="dashboard" element={<AdminDashboard />} />
-            <Route path="pks/:nomor" element={<PksDetailPage />} />
-            <Route path="pks/:nomor/edit" element={<EditPksPage />} />
+            {/* Diubah ke :id */}
+            <Route path="pks/:id" element={<PksDetailPage />} />
+            <Route path="pks/:id/edit" element={<EditPksPage />} />
             <Route path="register-admin" element={<RegisterAdminPage />} />
+            {/* Default redirect untuk /admin */}
             <Route index element={<Navigate to="/admin/dashboard" />} />
           </Route>
         </Route>

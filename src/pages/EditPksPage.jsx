@@ -1,28 +1,23 @@
-// src/pages/EditPksPage.jsx
-
 import React, { useState, useEffect } from "react";
 import pksService from "../services/pksService";
 import { useParams, useNavigate, Link } from "react-router-dom";
 
 export default function EditPksPage() {
-  const { nomor } = useParams();
+  const { id } = useParams(); // Diubah dari nomor ke id
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState(null);
-  const [originalPks, setOriginalPks] = useState(null); // Simpan data asli di sini
-
   const [loading, setLoading] = useState(true);
   const [saveLoading, setSaveLoading] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
 
   useEffect(() => {
     const fetchPksData = async () => {
-      if (!nomor) return;
+      if (!id) return;
       try {
         setLoading(true);
-        const pksData = await pksService.getPksByNomor(nomor);
+        const pksData = await pksService.getPksById(id); // Menggunakan getPksById
         setFormData(pksData);
-        setOriginalPks(pksData); // Simpan data asli untuk menjaga nomor
       } catch (error) {
         setMessage({ type: "error", text: "Gagal memuat data PKS." });
       } finally {
@@ -30,32 +25,19 @@ export default function EditPksPage() {
       }
     };
     fetchPksData();
-  }, [nomor]);
+  }, [id]);
 
   const handleChange = (e) => {
     const { name, value, dataset } = e.target;
     const { section } = dataset;
 
-    setFormData((prev) => {
-      if (section === "content") {
-        return {
-          ...prev,
-          content: {
-            ...prev.content,
-            nomor: originalPks.content.nomor, // 🔒 Selalu preserve nomor
-            [name]: value,
-          },
-        };
-      }
-
-      return {
-        ...prev,
-        [section]: {
-          ...prev[section],
-          [name]: value,
-        },
-      };
-    });
+    setFormData((prev) => ({
+      ...prev,
+      [section]: {
+        ...prev[section],
+        [name]: value,
+      },
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -63,21 +45,17 @@ export default function EditPksPage() {
     setSaveLoading(true);
     setMessage({ type: "", text: "" });
 
-    // --- PENCEGAHAN UTAMA ADA DI SINI ---
+    // Payload tidak perlu menyertakan nomor, karena tidak bisa diubah
     const payload = {
-      content: {
-        ...formData.content,
-        nomor: originalPks.content.nomor, // Selalu sertakan nomor asli!
-      },
+      content: formData.content,
       pihakKedua: formData.pihakKedua,
       properties: formData.properties,
     };
-    // ------------------------------------
 
     try {
-      await pksService.updatePks(nomor, payload);
+      await pksService.updatePks(id, payload); // Menggunakan id
       alert("Data PKS berhasil diperbarui!");
-      navigate(`/admin/pks/${nomor}`);
+      navigate(`/admin/pks/${id}`); // Navigasi kembali menggunakan id
     } catch (err) {
       setMessage({
         type: "error",
@@ -100,6 +78,10 @@ export default function EditPksPage() {
       </div>
     );
 
+  const displayNomor = formData.content.nomor
+    ? formData.content.nomor.replace(/-/g, "/")
+    : "-";
+
   return (
     <div className="bg-gray-50 min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-3xl p-8 space-y-6 bg-white rounded-lg shadow-md">
@@ -107,7 +89,7 @@ export default function EditPksPage() {
           <h2 className="text-3xl font-bold text-gray-800">
             Edit Perjanjian Kerja Sama
           </h2>
-          <p className="text-gray-500">{nomor}</p>
+          <p className="text-gray-500">{displayNomor}</p>
         </div>
         <form onSubmit={handleSubmit} className="space-y-8">
           <fieldset className="p-4 border rounded-md">
@@ -241,7 +223,7 @@ export default function EditPksPage() {
           )}
           <div className="flex items-center justify-end gap-4">
             <Link
-              to={`/admin/pks/${nomor}`}
+              to={`/admin/pks/${id}`} // Navigasi kembali menggunakan id
               className="px-6 py-2 font-semibold text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300"
             >
               Batal

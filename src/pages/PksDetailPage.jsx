@@ -21,7 +21,7 @@ const STATUS_OPTIONS = [
 ];
 
 export default function PksDetailPage() {
-  const { nomor } = useParams();
+  const { id } = useParams(); // Diubah dari nomor ke id
   const navigate = useNavigate();
   const [pks, setPks] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -46,18 +46,18 @@ export default function PksDetailPage() {
   const [fileDeleteError, setFileDeleteError] = useState("");
 
   const fetchPks = useCallback(async () => {
-    if (!nomor) return;
+    if (!id) return;
     try {
       setLoading(true);
-      const response = await pksService.getPksByNomor(nomor);
-      setPks(response);
-      setNewStatus(response.properties.status);
+      const pksData = await pksService.getPksById(id); // Menggunakan getPksById
+      setPks(pksData);
+      setNewStatus(pksData.properties.status);
     } catch (err) {
       setError("Gagal mengambil data PKS.");
     } finally {
       setLoading(false);
     }
-  }, [nomor]);
+  }, [id]); // Dependency diubah ke id
 
   useEffect(() => {
     fetchPks();
@@ -84,8 +84,8 @@ export default function PksDetailPage() {
       },
     };
     try {
-      await pksService.updatePks(nomor, payload);
-      await pksService.sendNotification(nomor);
+      await pksService.updatePks(id, payload); // Menggunakan id
+      await pksService.sendNotification(id); // Menggunakan id
       setIsCommentModalOpen(false);
       setIsEmergencyModalOpen(false);
       fetchPks();
@@ -117,7 +117,7 @@ export default function PksDetailPage() {
     setDeleteLoading(true);
     setDeleteError("");
     try {
-      await pksService.deletePks(nomor);
+      await pksService.deletePks(id); // Menggunakan id
       alert("PKS berhasil dihapus.");
       navigate("/admin/dashboard");
     } catch (err) {
@@ -131,7 +131,7 @@ export default function PksDetailPage() {
     setFileDeleteLoading(true);
     setFileDeleteError("");
     try {
-      await pksService.deletePksFile(nomor);
+      await pksService.deletePksFile(id); // Menggunakan id
       setIsFileDeleteModalOpen(false);
       fetchPks();
     } catch (err) {
@@ -148,7 +148,7 @@ export default function PksDetailPage() {
         return (
           <>
             <Link
-              to={`/admin/pks/${nomor}/edit`}
+              to={`/admin/pks/${id}/edit`} // Menggunakan id
               className="block text-center w-full px-4 py-2 font-semibold text-white bg-gray-600 rounded-lg hover:bg-gray-700"
             >
               Edit Data PKS
@@ -248,13 +248,13 @@ export default function PksDetailPage() {
     properties = {},
     fileUpload = {},
   } = pks;
-  const handleDownload = () =>
-    pksService.downloadFile(nomor, fileUpload?.docName);
-  const handleGenerate = () => pksService.generateDocx(nomor);
+
+  const handleDownload = () => pksService.downloadFile(id, fileUpload?.docName);
+  const handleGenerate = () => pksService.generateDocx(id, content?.nomor);
 
   const pdfUrl =
     properties.status === "menunggu review" && fileUpload?.fileName
-      ? `${API_URL}/pks/${nomor}/file`
+      ? `${API_URL}/pks/${id}/file` // Menggunakan id
       : null;
 
   const displayNomor = content.nomor ? content.nomor.replace(/-/g, "/") : "-";
@@ -513,8 +513,8 @@ export default function PksDetailPage() {
         <div>
           <p className="text-gray-700">
             Apakah Anda benar-benar yakin ingin menghapus PKS dengan nomor{" "}
-            <strong>{nomor.replace(/-/g, "/")}</strong>? Tindakan ini tidak
-            dapat diurungkan.
+            <strong>{displayNomor}</strong>? Tindakan ini tidak dapat
+            diurungkan.
           </p>
           {deleteError && (
             <p className="mt-4 text-sm text-center text-red-600">
