@@ -2,7 +2,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
-import path from "path"; // <-- Impor modul 'path' dari Node.js
+import path from "path"; // Impor modul 'path' dari Node.js
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
@@ -12,8 +12,13 @@ export default defineConfig({
     rollupOptions: {
       external: ["fsevents"],
     },
-
     // Opsi ini akan membersihkan direktori output sebelum setiap build
     emptyOutDir: true,
+  },
+  resolve: {
+    alias: {
+      // Perbaikan untuk dependensi react-router-dom
+      "set-cookie-parser": "set-cookie-parser/lib/set-cookie.js",
+    },
   },
 });
