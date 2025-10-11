@@ -1,5 +1,3 @@
-// src/services/pksService.js
-import { send } from "vite";
 import apiClient from "./apiClient";
 
 const getAllPks = async (params) => {
