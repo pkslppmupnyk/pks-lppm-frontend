@@ -164,7 +164,7 @@ export default function PksDetailPage() {
             >
               Setujui Draft
             </button>
-            <button
+            {/* <button
               onClick={() =>
                 openCommentModal({
                   title: "Revisi Draft",
@@ -176,7 +176,7 @@ export default function PksDetailPage() {
               className="w-full px-4 py-2 font-semibold text-white bg-yellow-500 rounded-lg hover:bg-yellow-600"
             >
               Minta Revisi
-            </button>
+            </button> */}
             <button
               onClick={() =>
                 openCommentModal({
