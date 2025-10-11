@@ -70,10 +70,6 @@ export default function PksDetailPage() {
     setIsCommentModalOpen(true);
   };
 
-  // src/pages/PksDetailPage.jsx
-
-  // ...
-
   const handleStatusUpdate = async (status, commentText) => {
     setUpdateLoading(true);
     setUpdateError("");
@@ -89,12 +85,7 @@ export default function PksDetailPage() {
     };
     try {
       await pksService.updatePks(nomor, payload);
-
-      // --- TAMBAHKAN PEMANGGILAN NOTIFIKASI DI SINI ---
-      // Kirim notifikasi setelah status berhasil diubah
       await pksService.sendNotification(nomor);
-      // ---------------------------------------------
-
       setIsCommentModalOpen(false);
       setIsEmergencyModalOpen(false);
       fetchPks();
@@ -104,8 +95,6 @@ export default function PksDetailPage() {
       setUpdateLoading(false);
     }
   };
-
-  // ... (sisa kode tidak berubah)
 
   const handleCommentModalSubmit = (e) => {
     e.preventDefault();
@@ -159,7 +148,7 @@ export default function PksDetailPage() {
         return (
           <>
             <Link
-              to={`/admin/pks/${encodeURIComponent(nomor)}/edit`}
+              to={`/admin/pks/${nomor}/edit`}
               className="block text-center w-full px-4 py-2 font-semibold text-white bg-gray-600 rounded-lg hover:bg-gray-700"
             >
               Edit Data PKS
@@ -265,14 +254,16 @@ export default function PksDetailPage() {
 
   const pdfUrl =
     properties.status === "menunggu review" && fileUpload?.fileName
-      ? `${API_URL}/pks/${encodeURIComponent(nomor)}/file`
+      ? `${API_URL}/pks/${nomor}/file`
       : null;
+
+  const displayNomor = content.nomor ? content.nomor.replace(/-/g, "/") : "-";
 
   const detailContent = (
     <div className="bg-white shadow-md rounded-lg p-6">
       <div className="border-b pb-4 mb-6">
         <h1 className="text-2xl font-bold text-gray-800">{content?.judul}</h1>
-        <p className="text-gray-500">{content?.nomor}</p>
+        <p className="text-gray-500">{displayNomor}</p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         <div className="md:col-span-2 space-y-4">
@@ -522,7 +513,8 @@ export default function PksDetailPage() {
         <div>
           <p className="text-gray-700">
             Apakah Anda benar-benar yakin ingin menghapus PKS dengan nomor{" "}
-            <strong>{nomor}</strong>? Tindakan ini tidak dapat diurungkan.
+            <strong>{nomor.replace(/-/g, "/")}</strong>? Tindakan ini tidak
+            dapat diurungkan.
           </p>
           {deleteError && (
             <p className="mt-4 text-sm text-center text-red-600">

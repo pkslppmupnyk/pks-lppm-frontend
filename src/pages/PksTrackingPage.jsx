@@ -71,16 +71,12 @@ export default function PksTrackingPage() {
     setUploading(true);
     setUploadMessage("");
     try {
-      // Langkah 1: Unggah file
       await pksService.uploadPksFile(nomor, selectedFile);
-
-      // Langkah 2: Panggil endpoint baru untuk ubah status
       await pksService.submitForReview(nomor);
-
       setUploadMessage(
         "File berhasil diunggah dan PKS telah dikirim untuk direview!"
       );
-      fetchPks(); // Refresh data untuk menampilkan status baru
+      fetchPks();
     } catch (err) {
       setUploadMessage(
         "Gagal: " + (err.message || "Terjadi kesalahan. Coba lagi nanti.")
@@ -107,6 +103,8 @@ export default function PksTrackingPage() {
     fileUpload = {},
   } = pks;
 
+  const displayNomor = content.nomor ? content.nomor.replace(/-/g, "/") : "-";
+
   return (
     <div className="container mx-auto px-4 sm:px-6 py-8">
       <Link
@@ -118,7 +116,7 @@ export default function PksTrackingPage() {
       <div className="bg-white shadow-md rounded-lg p-6">
         <div className="border-b pb-4 mb-6">
           <h1 className="text-2xl font-bold text-gray-800">{content?.judul}</h1>
-          <p className="text-gray-500 font-mono">{content?.nomor}</p>
+          <p className="text-gray-500 font-mono">{displayNomor}</p>
           <div className="mt-2">
             <StatusBadge status={properties?.status} />
           </div>
@@ -162,20 +160,17 @@ export default function PksTrackingPage() {
               Aksi yang Tersedia
             </h3>
             <button
-              onClick={() => pksService.generateDocx(nomor)}
+              onClick={() => pksService.generateDocx(content.nomor)}
               className="w-full px-4 py-2 font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
             >
               Generate Dokumen (.docx)
             </button>
-
-            {/* --- BLOK BARU DITAMBAHKAN DI SINI --- */}
             {fileUpload?.fileName ? (
               <div className="mt-4 pt-4 border-t">
                 <h4 className="text-sm font-semibold text-gray-600 mb-2">
                   File Tersimpan:
                 </h4>
                 <div className="flex items-center bg-gray-50 p-2 rounded-md">
-                  {/* SVG Icon untuk file */}
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-6 w-6 text-red-500 mr-3"
@@ -196,7 +191,7 @@ export default function PksTrackingPage() {
                 </div>
                 <button
                   onClick={() =>
-                    pksService.downloadFile(nomor, fileUpload.docName)
+                    pksService.downloadFile(content.nomor, fileUpload.docName)
                   }
                   className="mt-2 w-full px-4 py-2 font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors"
                 >
@@ -208,7 +203,6 @@ export default function PksTrackingPage() {
                 Lampiran belum tersedia.
               </div>
             )}
-            {/* --- AKHIR BLOK BARU --- */}
 
             {properties.status === "menunggu dokumen" && (
               <div className="pt-4 border-t">
@@ -229,7 +223,7 @@ export default function PksTrackingPage() {
                   disabled={!selectedFile || uploading}
                   className="mt-2 w-full px-4 py-2 font-semibold text-white bg-green-700 rounded-lg hover:bg-green-800 transition-colors disabled:bg-gray-400"
                 >
-                  {uploading ? "Mengunggah..." : "Upload File"}
+                  {uploading ? "Mengunggah..." : "Upload & Kirim untuk Review"}
                 </button>
                 {uploadMessage && (
                   <p
