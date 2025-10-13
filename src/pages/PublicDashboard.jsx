@@ -117,12 +117,20 @@ export default function PublicDashboard() {
               className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
             />
           </div>
-          <Link
-            to="/submit-pks"
-            className="w-full md:w-auto text-center bg-green-700 text-white font-semibold py-2 px-6 rounded-lg hover:bg-green-800 transition-colors whitespace-nowrap"
-          >
-            Buat PKS Baru
-          </Link>
+          <div className="flex gap-2">
+            <Link
+              to="/panduan"
+              className="w-full md:w-auto text-center bg-gray-500 text-white font-semibold py-2 px-6 rounded-lg hover:bg-gray-600 transition-colors whitespace-nowrap"
+            >
+              Lihat Panduan
+            </Link>
+            <Link
+              to="/submit-pks"
+              className="w-full md:w-auto text-center bg-green-700 text-white font-semibold py-2 px-6 rounded-lg hover:bg-green-800 transition-colors whitespace-nowrap"
+            >
+              Buat PKS Baru
+            </Link>
+          </div>
         </div>
 
         {loading && <p className="text-center py-4">Memuat data...</p>}

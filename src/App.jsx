@@ -9,6 +9,7 @@ import AdminLayout from "./components/layout/AdminLayout";
 import PublicDashboard from "./pages/PublicDashboard";
 import SubmitPksPage from "./pages/SubmitPksPage";
 import PksTrackingPage from "./pages/PksTrackingPage";
+import PanduanPage from "./pages/PanduanPage"; // Impor halaman panduan
 
 // Halaman Admin
 import LoginPage from "./pages/LoginPage";
@@ -30,6 +31,8 @@ export default function App() {
           <Route path="/submit-pks" element={<SubmitPksPage />} />
           {/* Diubah ke :id */}
           <Route path="/track/:id" element={<PksTrackingPage />} />
+          <Route path="/panduan" element={<PanduanPage />} />{" "}
+          {/* Rute panduan */}
         </Route>
 
         {/* === RUTE ADMIN & LOGIN === */}
