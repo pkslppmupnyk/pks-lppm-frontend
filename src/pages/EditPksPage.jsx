@@ -1,9 +1,10 @@
+// pkslppmupnyk/pks-lppm-frontend/pks-lppm-frontend-6d19cd1e283a175faee4de12eeec1140fb9398e2/src/pages/EditPksPage.jsx
 import React, { useState, useEffect } from "react";
 import pksService from "../services/pksService";
 import { useParams, useNavigate, Link } from "react-router-dom";
 
 export default function EditPksPage() {
-  const { id } = useParams(); // Diubah dari nomor ke id
+  const { id } = useParams();
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState(null);
@@ -16,11 +17,10 @@ export default function EditPksPage() {
       if (!id) return;
       try {
         setLoading(true);
-        const pksData = await pksService.getPksById(id); // Menggunakan getPksById
+        const pksData = await pksService.getPksById(id);
         setFormData(pksData);
       } catch (error) {
         setMessage({ type: "error", text: "Gagal memuat data PKS." });
-        console.error(error);
       } finally {
         setLoading(false);
       }
@@ -46,7 +46,6 @@ export default function EditPksPage() {
     setSaveLoading(true);
     setMessage({ type: "", text: "" });
 
-    // Payload tidak perlu menyertakan nomor, karena tidak bisa diubah
     const payload = {
       content: formData.content,
       pihakKedua: formData.pihakKedua,
@@ -54,9 +53,9 @@ export default function EditPksPage() {
     };
 
     try {
-      await pksService.updatePks(id, payload); // Menggunakan id
+      await pksService.updatePks(id, payload);
       alert("Data PKS berhasil diperbarui!");
-      navigate(`/admin/pks/${id}`); // Navigasi kembali menggunakan id
+      navigate(`/admin/pks/${id}`);
     } catch (err) {
       setMessage({
         type: "error",
@@ -111,22 +110,6 @@ export default function EditPksPage() {
                 />
               </div>
               <div>
-                <label>Cakupan Kerjasama</label>
-                <select
-                  name="cakupanKerjaSama"
-                  value={formData.properties.cakupanKerjaSama}
-                  data-section="properties"
-                  disabled // Menonaktifkan field
-                  className={`${inputClass} bg-gray-100 cursor-not-allowed`}
-                >
-                  <option value="dalam negeri">Dalam Negeri</option>
-                  <option value="luar negeri">Luar Negeri</option>
-                </select>
-                <small className="text-gray-500">
-                  Cakupan tidak dapat diubah setelah PKS dibuat.
-                </small>
-              </div>
-              <div>
                 <label>Email Pemberitahuan*</label>
                 <input
                   type="email"
@@ -161,6 +144,23 @@ export default function EditPksPage() {
                   required
                   className={inputClass}
                 />
+              </div>
+              <div>
+                <label>Cakupan Kerjasama*</label>
+                <select
+                  name="cakupanKerjaSama"
+                  value={formData.properties.cakupanKerjaSama}
+                  data-section="properties"
+                  onChange={handleChange}
+                  required
+                  className={inputClass}
+                >
+                  <option value="dalam negeri">Dalam Negeri</option>
+                  <option value="luar negeri">Luar Negeri</option>
+                </select>
+                <small className="text-gray-500">
+                  Mengubah cakupan akan mengubah nomor PKS.
+                </small>
               </div>
             </div>
           </fieldset>
@@ -240,7 +240,7 @@ export default function EditPksPage() {
           )}
           <div className="flex items-center justify-end gap-4">
             <Link
-              to={`/admin/pks/${id}`} // Navigasi kembali menggunakan id
+              to={`/admin/pks/${id}`}
               className="px-6 py-2 font-semibold text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300"
             >
               Batal
