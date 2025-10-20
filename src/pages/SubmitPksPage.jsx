@@ -19,6 +19,7 @@ export default function SubmitPksPage() {
     },
     properties: {
       email: "",
+      telepon: "",
       reminderDate: "",
       cakupanKerjaSama: "dalam negeri", // Nilai default
     },
@@ -123,6 +124,22 @@ export default function SubmitPksPage() {
                   className={inputClass}
                 />
               </div>
+              {/* --- TAMBAHKAN INPUT BARU DI SINI --- */}
+              <div>
+                <label>Nomor WhatsApp</label>
+                <input
+                  type="tel"
+                  name="telepon"
+                  data-section="properties"
+                  onChange={handleChange}
+                  className={inputClass}
+                  placeholder="Contoh: 081234567890"
+                />
+                <small className="text-gray-500">
+                  Nomor yang bisa dihubungi admin jika ada kendala.
+                </small>
+              </div>
+              {/* ------------------------------------- */}
               <div>
                 <label>Tanggal Mulai*</label>
                 <input

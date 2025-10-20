@@ -170,6 +170,18 @@ export default function EditPksPage() {
                 />
               </div>
               <div>
+                <label>Nomor WhatsApp</label>
+                <input
+                  type="tel"
+                  name="telepon"
+                  value={formData.properties.telepon || ""}
+                  data-section="properties"
+                  onChange={handleChange}
+                  className={inputClass}
+                  placeholder="Kontak WhatsApp pengaju"
+                />
+              </div>
+              <div>
                 <label>Tanggal Mulai*</label>
                 <input
                   type="date"

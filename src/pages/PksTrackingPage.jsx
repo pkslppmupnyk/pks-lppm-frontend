@@ -160,6 +160,7 @@ export default function PksTrackingPage() {
                 })`}
               />
               <DetailRow label="Email Kontak" value={properties?.email} />
+              <DetailRow label="Nomor WhatsApp" value={properties?.telepon} />
               <DetailRow
                 label="Tanggal Berlaku"
                 value={
