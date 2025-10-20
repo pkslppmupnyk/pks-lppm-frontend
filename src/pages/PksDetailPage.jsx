@@ -1,3 +1,4 @@
+// src/pages/PksDetailPage.jsx
 import React, { useEffect, useState, useCallback } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import pksService from "../services/pksService";
@@ -5,10 +6,12 @@ import Modal from "../components/Modal";
 import PdfViewer from "../components/PdfViewer";
 import { API_URL } from "../services/apiClient";
 
-const DetailRow = ({ label, value }) => (
+const DetailRow = ({ label, value, className }) => (
   <div className="py-2">
     <dt className="text-sm font-medium text-gray-500">{label}</dt>
-    <dd className="mt-1 text-md text-gray-900">{value || "-"}</dd>
+    <dd className={`mt-1 text-md text-gray-900 ${className || ""}`}>
+      {value || "-"}
+    </dd>
   </div>
 );
 
@@ -21,7 +24,7 @@ const STATUS_OPTIONS = [
 ];
 
 export default function PksDetailPage() {
-  const { id } = useParams(); // Diubah dari nomor ke id
+  const { id } = useParams();
   const navigate = useNavigate();
   const [pks, setPks] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -49,7 +52,7 @@ export default function PksDetailPage() {
     if (!id) return;
     try {
       setLoading(true);
-      const pksData = await pksService.getPksById(id); // Menggunakan getPksById
+      const pksData = await pksService.getPksById(id);
       setPks(pksData);
       setNewStatus(pksData.properties.status);
     } catch (err) {
@@ -57,7 +60,7 @@ export default function PksDetailPage() {
     } finally {
       setLoading(false);
     }
-  }, [id]); // Dependency diubah ke id
+  }, [id]);
 
   useEffect(() => {
     fetchPks();
@@ -75,8 +78,8 @@ export default function PksDetailPage() {
     setUpdateError("");
     const payload = {
       properties: {
+        ...pks.properties, // <-- FIX: Menyertakan semua properti yang ada
         status: status,
-        email: pks.properties.email,
         comment:
           commentText !== undefined
             ? commentText.trim()
@@ -84,8 +87,8 @@ export default function PksDetailPage() {
       },
     };
     try {
-      await pksService.updatePks(id, payload); // Menggunakan id
-      await pksService.sendNotification(id); // Menggunakan id
+      await pksService.updatePks(id, payload);
+      await pksService.sendNotification(id);
       setIsCommentModalOpen(false);
       setIsEmergencyModalOpen(false);
       fetchPks();
@@ -117,7 +120,7 @@ export default function PksDetailPage() {
     setDeleteLoading(true);
     setDeleteError("");
     try {
-      await pksService.deletePks(id); // Menggunakan id
+      await pksService.deletePks(id);
       alert("PKS berhasil dihapus.");
       navigate("/admin/dashboard");
     } catch (err) {
@@ -131,7 +134,7 @@ export default function PksDetailPage() {
     setFileDeleteLoading(true);
     setFileDeleteError("");
     try {
-      await pksService.deletePksFile(id); // Menggunakan id
+      await pksService.deletePksFile(id);
       setIsFileDeleteModalOpen(false);
       fetchPks();
     } catch (err) {
@@ -148,7 +151,7 @@ export default function PksDetailPage() {
         return (
           <>
             <Link
-              to={`/admin/pks/${id}/edit`} // Menggunakan id
+              to={`/admin/pks/${id}/edit`}
               className="block text-center w-full px-4 py-2 font-semibold text-white bg-gray-600 rounded-lg hover:bg-gray-700"
             >
               Edit Data PKS
@@ -164,19 +167,6 @@ export default function PksDetailPage() {
             >
               Setujui Draft
             </button>
-            {/* <button
-              onClick={() =>
-                openCommentModal({
-                  title: "Revisi Draft",
-                  newStatus: "draft",
-                  commentPrefix: "Draft perlu direvisi: ",
-                  commentRequired: true,
-                })
-              }
-              className="w-full px-4 py-2 font-semibold text-white bg-yellow-500 rounded-lg hover:bg-yellow-600"
-            >
-              Minta Revisi
-            </button> */}
             <button
               onClick={() =>
                 openCommentModal({
@@ -254,7 +244,7 @@ export default function PksDetailPage() {
 
   const pdfUrl =
     properties.status === "menunggu review" && fileUpload?.fileName
-      ? `${API_URL}/pks/${id}/file` // Menggunakan id
+      ? `${API_URL}/pks/${id}/file`
       : null;
 
   const displayNomor = content.nomor ? content.nomor.replace(/-/g, "/") : "-";
