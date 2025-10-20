@@ -146,7 +146,7 @@ export default function PksTrackingPage() {
                   <dt className="text-sm font-medium text-gray-500">Logo</dt>
                   <dd className="mt-1">
                     <img
-                      src={`${API_URL}/../uploads/logos/${logoUpload.fileName}`}
+                      src={`${API_URL}/uploads/logos/${logoUpload.fileName}`}
                       alt="Logo Instansi"
                       className="max-h-20 border rounded p-1"
                     />
