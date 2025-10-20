@@ -274,6 +274,11 @@ export default function PksDetailPage() {
             />
             <DetailRow label="Komentar Terakhir" value={properties?.comment} />
             <DetailRow
+              label="Cakupan Kerjasama"
+              value={properties?.cakupanKerjaSama}
+              className="capitalize"
+            />
+            <DetailRow
               label="Instansi Pihak Kedua"
               value={pihakKedua?.instansi}
             />

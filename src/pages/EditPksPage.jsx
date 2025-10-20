@@ -20,6 +20,7 @@ export default function EditPksPage() {
         setFormData(pksData);
       } catch (error) {
         setMessage({ type: "error", text: "Gagal memuat data PKS." });
+        console.error(error);
       } finally {
         setLoading(false);
       }
@@ -108,6 +109,22 @@ export default function EditPksPage() {
                   required
                   className={inputClass}
                 />
+              </div>
+              <div>
+                <label>Cakupan Kerjasama</label>
+                <select
+                  name="cakupanKerjaSama"
+                  value={formData.properties.cakupanKerjaSama}
+                  data-section="properties"
+                  disabled // Menonaktifkan field
+                  className={`${inputClass} bg-gray-100 cursor-not-allowed`}
+                >
+                  <option value="dalam negeri">Dalam Negeri</option>
+                  <option value="luar negeri">Luar Negeri</option>
+                </select>
+                <small className="text-gray-500">
+                  Cakupan tidak dapat diubah setelah PKS dibuat.
+                </small>
               </div>
               <div>
                 <label>Email Pemberitahuan*</label>

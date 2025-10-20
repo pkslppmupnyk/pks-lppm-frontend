@@ -29,40 +29,25 @@ const StatusBadge = ({ status }) => {
 
 // Komponen TableRow
 const TableRow = ({ pks }) => {
-  // Tampilkan nomor dengan format '/'
   const displayNomor = pks.content?.nomor?.replace(/-/g, "/") || "-";
 
   return (
     <tr className="border-b hover:bg-gray-50">
-      <td className="py-4 px-4 sm:px-6 whitespace-normal break-words text-sm">
-        {pks.content?.judul || "-"}
-      </td>
-      <td className="py-4 px-4 sm:px-6 font-mono text-sm whitespace-normal break-words">
-        {displayNomor}
-      </td>
-      <td className="py-4 px-4 sm:px-6 whitespace-normal break-words text-sm">
+      <td className="py-4 px-4 sm:px-6 text-sm">{pks.content?.judul || "-"}</td>
+      <td className="py-4 px-4 sm:px-6 font-mono text-sm">{displayNomor}</td>
+      <td className="py-4 px-4 sm:px-6 text-sm">
         {pks.pihakKedua?.instansi || "-"}
       </td>
-      <td className="py-4 px-2 sm:px-6 text-sm hidden sm:table-cell">
-        {pks.content?.tanggal
-          ? new Date(pks.content.tanggal).toLocaleDateString("id-ID")
-          : "-"}
+      <td className="py-4 px-4 sm:px-6 text-sm capitalize">
+        {pks.properties?.cakupanKerjaSama || "-"}
       </td>
       <td className="py-4 px-2 sm:px-6 text-center">
-        <div className="flex flex-col sm:flex-row gap-2 items-center">
-          <StatusBadge status={pks.properties?.status} />
-          <div className="sm:hidden text-xs text-gray-500">
-            {pks.content?.tanggal
-              ? new Date(pks.content.tanggal).toLocaleDateString("id-ID")
-              : "-"}
-          </div>
-        </div>
+        <StatusBadge status={pks.properties?.status} />
       </td>
-      <td className="py-4 px-2 sm:px-6 whitespace-nowrap text-center">
-        {/* Link diubah untuk menggunakan pks._id */}
+      <td className="py-4 px-2 sm:px-6 text-center">
         <Link
           to={`/track/${pks._id}`}
-          className="bg-green-600 text-white text-xs font-semibold py-1 px-2 sm:px-3 rounded-md hover:bg-green-700 transition-colors inline-block min-w-[60px]"
+          className="bg-green-600 text-white text-xs font-semibold py-1 px-3 rounded-md hover:bg-green-700"
         >
           Detail
         </Link>
@@ -85,6 +70,7 @@ export default function PublicDashboard() {
         setPksList(response.data || []);
       } catch (err) {
         setError("Gagal memuat data PKS. Coba muat ulang halaman.");
+        console.error(err);
       } finally {
         setLoading(false);
       }
@@ -100,7 +86,8 @@ export default function PublicDashboard() {
         pks.content?.judul?.toLowerCase().includes(lowercasedTerm) ||
         pks.content?.nomor?.toLowerCase().includes(lowercasedTerm) ||
         pks.pihakKedua?.instansi?.toLowerCase().includes(lowercasedTerm) ||
-        pks.properties?.status?.toLowerCase().includes(lowercasedTerm)
+        pks.properties?.status?.toLowerCase().includes(lowercasedTerm) ||
+        pks.properties?.cakupanKerjaSama?.toLowerCase().includes(lowercasedTerm)
     );
   }, [searchTerm, pksList]);
 
@@ -113,28 +100,25 @@ export default function PublicDashboard() {
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Cari berdasarkan judul, nomor PKS, institusi..."
+              placeholder="Cari PKS..."
               className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
             />
           </div>
           <div className="flex gap-2">
             <Link
               to="/panduan"
-              className="w-full md:w-auto text-center bg-gray-500 text-white font-semibold py-2 px-6 rounded-lg hover:bg-gray-600 transition-colors whitespace-nowrap"
+              className="w-full md:w-auto text-center bg-gray-500 text-white font-semibold py-2 px-6 rounded-lg hover:bg-gray-600"
             >
-              Lihat Panduan
+              Panduan
             </Link>
             <Link
               to="/submit-pks"
-              className="w-full md:w-auto text-center bg-green-700 text-white font-semibold py-2 px-6 rounded-lg hover:bg-green-800 transition-colors whitespace-nowrap"
+              className="w-full md:w-auto text-center bg-green-700 text-white font-semibold py-2 px-6 rounded-lg hover:bg-green-800"
             >
               Buat PKS Baru
             </Link>
           </div>
         </div>
-
-        {loading && <p className="text-center py-4">Memuat data...</p>}
-        {error && <p className="text-center py-4 text-red-500">{error}</p>}
 
         {!loading && !error && (
           <div className="overflow-x-auto">
@@ -150,13 +134,13 @@ export default function PublicDashboard() {
                   <th className="w-[20%] py-4 px-4 sm:px-6 text-left font-semibold text-gray-600 text-sm">
                     Pihak Kedua
                   </th>
-                  <th className="w-[10%] py-4 px-4 sm:px-6 text-left font-semibold text-gray-600 text-sm hidden sm:table-cell">
-                    Tanggal
+                  <th className="w-[15%] py-4 px-4 sm:px-6 text-left font-semibold text-gray-600 text-sm">
+                    Cakupan
                   </th>
-                  <th className="w-[12%] py-4 px-4 sm:px-6 text-left font-semibold text-gray-600 text-sm">
+                  <th className="w-[10%] py-4 px-4 sm:px-6 text-center font-semibold text-gray-600 text-sm">
                     Status
                   </th>
-                  <th className="w-[8%] py-4 px-4 sm:px-6 text-center font-semibold text-gray-600 text-sm">
+                  <th className="w-[5%] py-4 px-4 sm:px-6 text-center font-semibold text-gray-600 text-sm">
                     Aksi
                   </th>
                 </tr>
@@ -167,7 +151,7 @@ export default function PublicDashboard() {
                 ) : (
                   <tr>
                     <td colSpan="6" className="text-center py-6 text-gray-500">
-                      Tidak ada data yang cocok dengan pencarian Anda.
+                      Tidak ada data.
                     </td>
                   </tr>
                 )}

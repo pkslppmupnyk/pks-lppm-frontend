@@ -42,6 +42,10 @@ export default function PksCard({ pks }) {
           <span className="font-semibold">Instansi:</span>{" "}
           {pks?.pihakKedua?.instansi || "-"}
         </p>
+        <p className="text-sm text-gray-600 mb-1 capitalize">
+          <span className="font-semibold">Cakupan:</span>{" "}
+          {pks?.properties?.cakupanKerjaSama || "-"}
+        </p>
         <p className="text-sm text-gray-600">
           <span className="font-semibold">Nomor:</span> {displayNomor}
         </p>

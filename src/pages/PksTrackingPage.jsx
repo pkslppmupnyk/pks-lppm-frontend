@@ -130,6 +130,11 @@ export default function PksTrackingPage() {
                 value={properties?.comment}
               />
               <DetailRow
+                label="Cakupan Kerjasama"
+                value={properties?.cakupanKerjaSama}
+                className="capitalize"
+              />
+              <DetailRow
                 label="Instansi Pihak Kedua"
                 value={pihakKedua?.instansi}
               />
@@ -209,17 +214,26 @@ export default function PksTrackingPage() {
                 <h3 className="font-semibold text-lg">
                   Upload Dokumen Lampiran
                 </h3>
-                   <div className="text-sm text-gray-500 mb-2">
-                     <p>
-                       Silakan cetak dokumen ini sebanyak dua eksemplar. Pastikan:
-                     </p>
-                     <ol className="list-decimal list-inside ml-4">
-                       <li>Tempelkan materai pada eksemplar pertama (pihak pertama).</li>
-                       <li>Tempelkan materai pada eksemplar kedua (pihak kedua).</li>
-                       <li>Pihak kedua dimohon menandatangani setiap eksemplar sesuai posisi yang tertera.</li>
-                     </ol>
-                     <p className="mt-2">Scan dan unggah dokumen dalam format PDF.</p>
-                   </div>
+                <div className="text-sm text-gray-500 mb-2">
+                  <p>
+                    Silakan cetak dokumen ini sebanyak dua eksemplar. Pastikan:
+                  </p>
+                  <ol className="list-decimal list-inside ml-4">
+                    <li>
+                      Tempelkan materai pada eksemplar pertama (pihak pertama).
+                    </li>
+                    <li>
+                      Tempelkan materai pada eksemplar kedua (pihak kedua).
+                    </li>
+                    <li>
+                      Pihak kedua dimohon menandatangani setiap eksemplar sesuai
+                      posisi yang tertera.
+                    </li>
+                  </ol>
+                  <p className="mt-2">
+                    Scan dan unggah dokumen dalam format PDF.
+                  </p>
+                </div>
                 <input
                   type="file"
                   accept=".pdf"

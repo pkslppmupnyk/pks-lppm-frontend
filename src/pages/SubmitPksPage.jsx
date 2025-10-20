@@ -1,4 +1,5 @@
 // src/pages/SubmitPksPage.jsx
+
 import React, { useState } from "react";
 import pksService from "../services/pksService";
 import { Link } from "react-router-dom";
@@ -20,6 +21,7 @@ export default function SubmitPksPage() {
     properties: {
       email: "",
       reminderDate: "",
+      cakupanKerjaSama: "dalam negeri", // Nilai default
     },
   });
   const [loading, setLoading] = useState(false);
@@ -42,7 +44,6 @@ export default function SubmitPksPage() {
     setLoading(true);
     setMessage({ type: "", text: "" });
     try {
-      // 1. Kirim data PKS untuk dibuat (ini tetap berjalan)
       const createResponse = await pksService.createPks(formData);
       const newPksId = createResponse.data?._id;
 
@@ -50,11 +51,15 @@ export default function SubmitPksPage() {
         throw new Error("Gagal mendapatkan ID PKS setelah dibuat.");
       }
 
-      // 2. Panggilan untuk kirim email kita komentari untuk sementara
-      // await pksService.sendEmail(newPksId);
+      setMessage({
+        type: "success",
+        text: "PKS berhasil diajukan! Anda akan diarahkan otomatis.",
+      });
 
-      // 3. Ubah pesan suksesnya
-      setMessage({ type: "success", text: "PKS berhasil diajukan!" });
+      // Arahkan ke halaman tracking setelah 2 detik
+      setTimeout(() => {
+        window.location.href = `/track/${newPksId}`;
+      }, 2000);
     } catch (err) {
       setMessage({
         type: "error",
@@ -68,196 +73,178 @@ export default function SubmitPksPage() {
   const inputClass =
     "w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500";
 
-return (
-  <div className="bg-gray-50 min-h-screen flex items-center justify-center p-4">
-    <div className="w-full max-w-3xl p-8 space-y-6 bg-white rounded-lg shadow-md">
-      <div className="text-center">
-        <h2 className="text-3xl font-bold text-gray-800">
-          Form Pengajuan Perjanjian Kerja Sama (PKS)
-        </h2>
-        <Link to="/" className="text-sm text-blue-600 hover:underline">
-          &larr; Kembali ke Halaman Utama
-        </Link>
-      </div>
-      <form onSubmit={handleSubmit} className="space-y-8">
-        {/* Section 1: Detail Perjanjian */}
-        <fieldset className="p-4 border rounded-md">
-          <legend className="px-2 font-semibold text-lg text-gray-700">
-            Detail Perjanjian
-          </legend>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label>Judul Kerjasama*</label>
-              <input
-                type="text"
-                name="judul"
-                data-section="content"
-                onChange={handleChange}
-                required
-                className={inputClass}
-              />
-              <small className="text-gray-500">
-                Masukkan judul atau nama kerja sama yang diajukan.
-              </small>
+  return (
+    <div className="bg-gray-50 min-h-screen flex items-center justify-center p-4">
+      <div className="w-full max-w-3xl p-8 space-y-6 bg-white rounded-lg shadow-md">
+        <div className="text-center">
+          <h2 className="text-3xl font-bold text-gray-800">
+            Form Pengajuan Perjanjian Kerja Sama (PKS)
+          </h2>
+          <Link to="/" className="text-sm text-blue-600 hover:underline">
+            &larr; Kembali ke Halaman Utama
+          </Link>
+        </div>
+        <form onSubmit={handleSubmit} className="space-y-8">
+          {/* Section 1: Detail Perjanjian */}
+          <fieldset className="p-4 border rounded-md">
+            <legend className="px-2 font-semibold text-lg text-gray-700">
+              Detail Perjanjian
+            </legend>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label>Judul Kerjasama*</label>
+                <input
+                  type="text"
+                  name="judul"
+                  data-section="content"
+                  onChange={handleChange}
+                  required
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label>Email Pemberitahuan*</label>
+                <input
+                  type="email"
+                  name="email"
+                  data-section="properties"
+                  onChange={handleChange}
+                  required
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label>Tanggal Mulai*</label>
+                <input
+                  type="date"
+                  name="tanggal"
+                  data-section="content"
+                  onChange={handleChange}
+                  required
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label>Tanggal Kadaluarsa*</label>
+                <input
+                  type="date"
+                  name="tanggalKadaluarsa"
+                  data-section="content"
+                  onChange={handleChange}
+                  required
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label>Cakupan Kerjasama*</label>
+                <select
+                  name="cakupanKerjaSama"
+                  data-section="properties"
+                  value={formData.properties.cakupanKerjaSama}
+                  onChange={handleChange}
+                  required
+                  className={inputClass}
+                >
+                  <option value="dalam negeri">Dalam Negeri</option>
+                  <option value="luar negeri">Luar Negeri</option>
+                </select>
+              </div>
+              <div>
+                <label>Tanggal Pengingat</label>
+                <input
+                  type="date"
+                  name="reminderDate"
+                  data-section="properties"
+                  onChange={handleChange}
+                  className={inputClass}
+                />
+              </div>
             </div>
-            <div>
-              <label>Email Pemberitahuan*</label>
-              <input
-                type="email"
-                name="email"
-                data-section="properties"
-                onChange={handleChange}
-                required
-                className={inputClass}
-              />
-              <small className="text-gray-500">
-                Email ini akan menerima notifikasi pengajuan PKS.
-              </small>
-            </div>
-            <div>
-              <label>Tanggal Mulai*</label>
-              <input
-                type="date"
-                name="tanggal"
-                data-section="content"
-                onChange={handleChange}
-                required
-                className={inputClass}
-              />
-              <small className="text-gray-500">
-                Tanggal mulai berlaku untuk PKS.
-              </small>
-            </div>
-            <div>
-              <label>Tanggal Kadaluarsa*</label>
-              <input
-                type="date"
-                name="tanggalKadaluarsa"
-                data-section="content"
-                onChange={handleChange}
-                required
-                className={inputClass}
-              />
-              <small className="text-gray-500">
-                Tanggal berakhirnya masa berlaku PKS.
-              </small>
-            </div>
-            <div>
-              <label>Tanggal Pengingat</label>
-              <input
-                type="date"
-                name="reminderDate"
-                data-section="properties"
-                onChange={handleChange}
-                className={inputClass}
-              />
-              <small className="text-gray-500">
-                Pilih tanggal pengingat sebelum PKS berakhir (opsional).
-              </small>
-            </div>
-          </div>
-        </fieldset>
+          </fieldset>
 
-        {/* Section 2: Pihak Kedua */}
-        <fieldset className="p-4 border rounded-md">
-          <legend className="px-2 font-semibold text-lg text-gray-700">
-            Informasi Pihak Kedua
-          </legend>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label>Nama Instansi*</label>
-              <input
-                type="text"
-                name="instansi"
-                data-section="pihakKedua"
-                onChange={handleChange}
-                required
-                className={inputClass}
-              />
-              <small className="text-gray-500">
-                Nama instansi pihak kedua dalam kerja sama.
-              </small>
+          {/* Section 2: Pihak Kedua */}
+          <fieldset className="p-4 border rounded-md">
+            <legend className="px-2 font-semibold text-lg text-gray-700">
+              Informasi Pihak Kedua
+            </legend>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label>Nama Instansi*</label>
+                <input
+                  type="text"
+                  name="instansi"
+                  data-section="pihakKedua"
+                  onChange={handleChange}
+                  required
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label>Nomor Dokumen Pihak Kedua</label>
+                <input
+                  type="text"
+                  name="nomor"
+                  data-section="pihakKedua"
+                  onChange={handleChange}
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label>Nama Penanggung Jawab*</label>
+                <input
+                  type="text"
+                  name="nama"
+                  data-section="pihakKedua"
+                  onChange={handleChange}
+                  required
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label>Jabatan*</label>
+                <input
+                  type="text"
+                  name="jabatan"
+                  data-section="pihakKedua"
+                  onChange={handleChange}
+                  required
+                  className={inputClass}
+                />
+              </div>
+              <div className="md:col-span-2">
+                <label>Alamat Instansi*</label>
+                <textarea
+                  name="alamat"
+                  data-section="pihakKedua"
+                  onChange={handleChange}
+                  required
+                  className={inputClass}
+                ></textarea>
+              </div>
             </div>
-            <div>
-              <label>Nomor Dokumen Pihak Kedua</label>
-              <input
-                type="text"
-                name="nomor"
-                data-section="pihakKedua"
-                onChange={handleChange}
-                className={inputClass}
-              />
-              <small className="text-gray-500">
-                Nomor dokumen/arsip dari pihak kedua (jika ada).
-              </small>
-            </div>
-            <div>
-              <label>Nama Penanggung Jawab*</label>
-              <input
-                type="text"
-                name="nama"
-                data-section="pihakKedua"
-                onChange={handleChange}
-                required
-                className={inputClass}
-              />
-              <small className="text-gray-500">
-                Nama penanggung jawab dari instansi pihak kedua.
-              </small>
-            </div>
-            <div>
-              <label>Jabatan*</label>
-              <input
-                type="text"
-                name="jabatan"
-                data-section="pihakKedua"
-                onChange={handleChange}
-                required
-                className={inputClass}
-              />
-              <small className="text-gray-500">
-                Jabatan penanggung jawab di instansi pihak kedua.
-              </small>
-            </div>
-            <div className="md:col-span-2">
-              <label>Alamat Instansi*</label>
-              <textarea
-                name="alamat"
-                data-section="pihakKedua"
-                onChange={handleChange}
-                required
-                className={inputClass}
-              ></textarea>
-              <small className="text-gray-500">
-                Alamat lengkap dari instansi pihak kedua.
-              </small>
-            </div>
-          </div>
-        </fieldset>
+          </fieldset>
 
-        {/* Submission Feedback */}
-        {message.text && (
-          <div
-            className={`p-4 rounded-md text-center ${
-              message.type === "success"
-                ? "bg-green-100 text-green-800"
-                : "bg-red-100 text-red-800"
-            }`}
+          {message.text && (
+            <div
+              className={`p-4 rounded-md text-center ${
+                message.type === "success"
+                  ? "bg-green-100 text-green-800"
+                  : "bg-red-100 text-red-800"
+              }`}
+            >
+              {message.text}
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full px-4 py-3 font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:bg-gray-400"
           >
-            {message.text}
-          </div>
-        )}
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full px-4 py-3 font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:bg-gray-400"
-        >
-          {loading ? "Mengirim..." : "Ajukan PKS"}
-        </button>
-      </form>
+            {loading ? "Mengirim..." : "Ajukan PKS"}
+          </button>
+        </form>
+      </div>
     </div>
-  </div>
-);
-
+  );
 }
