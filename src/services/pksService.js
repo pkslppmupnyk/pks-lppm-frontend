@@ -85,6 +85,28 @@ const uploadPksFile = async (id, file) => {
   }
 };
 
+const uploadLogo = async (id, logoFile) => {
+  const formData = new FormData();
+  formData.append("logo", logoFile);
+  try {
+    const response = await apiClient.post(`/pks/${id}/logo`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
+const deleteLogo = async (id) => {
+  try {
+    const response = await apiClient.delete(`/pks/${id}/logo`);
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
 const generateDocx = async (id, nomorPks) => {
   try {
     const response = await apiClient.get(`/pks/${id}/generate`, {
@@ -138,6 +160,8 @@ const pksService = {
   sendNotification,
   uploadPksFile,
   deletePksFile,
+  uploadLogo,
+  deleteLogo,
 };
 
 export default pksService;

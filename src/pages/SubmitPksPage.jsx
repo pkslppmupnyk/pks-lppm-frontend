@@ -1,8 +1,7 @@
 // src/pages/SubmitPksPage.jsx
-
 import React, { useState } from "react";
 import pksService from "../services/pksService";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function SubmitPksPage() {
   const [formData, setFormData] = useState({
@@ -24,8 +23,10 @@ export default function SubmitPksPage() {
       cakupanKerjaSama: "dalam negeri", // Nilai default
     },
   });
+  const [logoFile, setLogoFile] = useState(null); // State untuk file logo
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value, dataset } = e.target;
@@ -39,11 +40,16 @@ export default function SubmitPksPage() {
     }));
   };
 
+  const handleLogoChange = (e) => {
+    setLogoFile(e.target.files[0]);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setMessage({ type: "", text: "" });
     try {
+      // 1. Buat entri PKS
       const createResponse = await pksService.createPks(formData);
       const newPksId = createResponse.data?._id;
 
@@ -51,14 +57,19 @@ export default function SubmitPksPage() {
         throw new Error("Gagal mendapatkan ID PKS setelah dibuat.");
       }
 
+      // 2. Jika ada file logo, unggah logonya
+      if (logoFile) {
+        await pksService.uploadLogo(newPksId, logoFile);
+      }
+
       setMessage({
         type: "success",
-        text: "PKS berhasil diajukan! Anda akan diarahkan otomatis.",
+        text: "PKS berhasil diajukan! Anda akan diarahkan...",
       });
 
-      // Arahkan ke halaman tracking setelah 2 detik
+      // 3. Arahkan pengguna ke halaman detail setelah 2 detik
       setTimeout(() => {
-        window.location.href = `/track/${newPksId}`;
+        navigate(`/track/${newPksId}`);
       }, 2000);
     } catch (err) {
       setMessage({
@@ -85,7 +96,6 @@ export default function SubmitPksPage() {
           </Link>
         </div>
         <form onSubmit={handleSubmit} className="space-y-8">
-          {/* Section 1: Detail Perjanjian */}
           <fieldset className="p-4 border rounded-md">
             <legend className="px-2 font-semibold text-lg text-gray-700">
               Detail Perjanjian
@@ -162,7 +172,6 @@ export default function SubmitPksPage() {
             </div>
           </fieldset>
 
-          {/* Section 2: Pihak Kedua */}
           <fieldset className="p-4 border rounded-md">
             <legend className="px-2 font-semibold text-lg text-gray-700">
               Informasi Pihak Kedua
@@ -220,6 +229,19 @@ export default function SubmitPksPage() {
                   required
                   className={inputClass}
                 ></textarea>
+              </div>
+              <div className="md:col-span-2">
+                <label>Logo Instansi (Opsional)</label>
+                <input
+                  type="file"
+                  name="logo"
+                  accept="image/png, image/jpeg, image/jpg"
+                  onChange={handleLogoChange}
+                  className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                />
+                <small className="text-gray-500">
+                  Format: PNG, JPG, JPEG. Maksimal 2MB.
+                </small>
               </div>
             </div>
           </fieldset>

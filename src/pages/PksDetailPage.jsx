@@ -78,7 +78,7 @@ export default function PksDetailPage() {
     setUpdateError("");
     const payload = {
       properties: {
-        ...pks.properties, // <-- FIX: Menyertakan semua properti yang ada
+        ...pks.properties,
         status: status,
         comment:
           commentText !== undefined
@@ -237,6 +237,7 @@ export default function PksDetailPage() {
     pihakKedua = {},
     properties = {},
     fileUpload = {},
+    logoUpload = {},
   } = pks;
 
   const handleDownload = () => pksService.downloadFile(id, fileUpload?.docName);
@@ -272,6 +273,18 @@ export default function PksDetailPage() {
               label="Instansi Pihak Kedua"
               value={pihakKedua?.instansi}
             />
+            {logoUpload?.fileName && (
+              <div className="py-2">
+                <dt className="text-sm font-medium text-gray-500">Logo</dt>
+                <dd className="mt-1">
+                  <img
+                    src={`${API_URL}/../uploads/logos/${logoUpload.fileName}`}
+                    alt="Logo Instansi"
+                    className="max-h-20 border rounded p-1"
+                  />
+                </dd>
+              </div>
+            )}
             <DetailRow
               label="Penanggung Jawab"
               value={`${pihakKedua?.nama || ""} (${pihakKedua?.jabatan || ""})`}
@@ -393,7 +406,6 @@ export default function PksDetailPage() {
         </>
       )}
 
-      {/* --- SEMUA MODAL DI SINI --- */}
       <Modal
         isOpen={isCommentModalOpen}
         onClose={() => setIsCommentModalOpen(false)}

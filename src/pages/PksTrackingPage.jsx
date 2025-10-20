@@ -1,16 +1,18 @@
+// src/pages/PksTrackingPage.jsx
 import React, { useEffect, useState, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import pksService from "../services/pksService";
+import { API_URL } from "../services/apiClient";
 
-// Komponen helper untuk menampilkan baris data detail
-const DetailRow = ({ label, value }) => (
+const DetailRow = ({ label, value, className }) => (
   <div className="py-2">
     <dt className="text-sm font-medium text-gray-500">{label}</dt>
-    <dd className="mt-1 text-md text-gray-900">{value || "-"}</dd>
+    <dd className={`mt-1 text-md text-gray-900 ${className || ""}`}>
+      {value || "-"}
+    </dd>
   </div>
 );
 
-// Komponen helper untuk badge status
 const StatusBadge = ({ status }) => {
   const statusMap = {
     draft: { text: "Draft", className: "bg-gray-200 text-gray-800" },
@@ -36,7 +38,7 @@ const StatusBadge = ({ status }) => {
 };
 
 export default function PksTrackingPage() {
-  const { id } = useParams(); // Diubah dari nomor ke id
+  const { id } = useParams();
   const [pks, setPks] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -48,14 +50,14 @@ export default function PksTrackingPage() {
     if (!id) return;
     try {
       setLoading(true);
-      const response = await pksService.getPksById(id); // Menggunakan getPksById
+      const response = await pksService.getPksById(id);
       setPks(response);
     } catch (err) {
       setError("Gagal mengambil data PKS atau data tidak ditemukan.");
     } finally {
       setLoading(false);
     }
-  }, [id]); // Dependency diubah ke id
+  }, [id]);
 
   useEffect(() => {
     fetchPks();
@@ -71,8 +73,8 @@ export default function PksTrackingPage() {
     setUploading(true);
     setUploadMessage("");
     try {
-      await pksService.uploadPksFile(id, selectedFile); // Menggunakan id
-      await pksService.submitForReview(id); // Menggunakan id
+      await pksService.uploadPksFile(id, selectedFile);
+      await pksService.submitForReview(id);
       setUploadMessage(
         "File berhasil diunggah dan PKS telah dikirim untuk direview!"
       );
@@ -101,6 +103,7 @@ export default function PksTrackingPage() {
     pihakKedua = {},
     properties = {},
     fileUpload = {},
+    logoUpload = {},
   } = pks;
 
   const displayNomor = content.nomor ? content.nomor.replace(/-/g, "/") : "-";
@@ -138,6 +141,18 @@ export default function PksTrackingPage() {
                 label="Instansi Pihak Kedua"
                 value={pihakKedua?.instansi}
               />
+              {logoUpload?.fileName && (
+                <div className="py-2">
+                  <dt className="text-sm font-medium text-gray-500">Logo</dt>
+                  <dd className="mt-1">
+                    <img
+                      src={`${API_URL}/../uploads/logos/${logoUpload.fileName}`}
+                      alt="Logo Instansi"
+                      className="max-h-20 border rounded p-1"
+                    />
+                  </dd>
+                </div>
+              )}
               <DetailRow
                 label="Penanggung Jawab"
                 value={`${pihakKedua?.nama || ""} (${
