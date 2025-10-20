@@ -25,7 +25,7 @@ export default function EditPksPage() {
         setFormData(pksData);
         if (pksData.logoUpload?.fileName) {
           setLogoPreview(
-            `${API_URL}/../uploads/logos/${pksData.logoUpload.fileName}`
+            `${API_URL}/uploads/logos/${pksData.logoUpload.fileName}`
           );
         }
       } catch (error) {
