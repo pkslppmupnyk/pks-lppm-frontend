@@ -65,7 +65,7 @@ export default function EditPksPage() {
       const response = await pksService.uploadLogo(id, logoFile);
       setMessage({ type: "success", text: "Logo berhasil diperbarui." });
       setLogoFile(null);
-      setLogoPreview(`${API_URL}/../uploads/logos/${response.data.fileName}`);
+      setLogoPreview(`${API_URL}/uploads/logos/${response.data.fileName}`);
     } catch (error) {
       setMessage({ type: "error", text: "Gagal mengunggah logo." });
     } finally {
