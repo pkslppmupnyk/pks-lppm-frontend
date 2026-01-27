@@ -17,6 +17,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import PksDetailPage from "./pages/PksDetailPage";
 import EditPksPage from "./pages/EditPksPage";
 import RegisterAdminPage from "./pages/RegisterAdminPage";
+import AdminSettingsPage from "./pages/AdminSettingsPage"; // Import page baru
 
 // Komponen utilitas
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -44,6 +45,7 @@ export default function App() {
             <Route path="pks/:id" element={<PksDetailPage />} />
             <Route path="pks/:id/edit" element={<EditPksPage />} />
             <Route path="register-admin" element={<RegisterAdminPage />} />
+            <Route path="settings" element={<AdminSettingsPage />} />
             {/* Default redirect untuk /admin */}
             <Route index element={<Navigate to="/admin/dashboard" />} />
           </Route>

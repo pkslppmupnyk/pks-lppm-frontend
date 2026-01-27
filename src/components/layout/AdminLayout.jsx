@@ -49,6 +49,14 @@ export default function AdminLayout() {
                 Tambah Admin Baru
               </Link>
             </li>
+            <li className="mb-4">
+              <Link
+                to="/admin/settings"
+                className="block p-2 rounded hover:bg-gray-700"
+              >
+                Pengaturan Nomor dan Tahun
+              </Link>
+            </li>
             {/* ---------------------------------- */}
           </ul>
         </nav>
