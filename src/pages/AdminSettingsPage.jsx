@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { adminService } from "../services/adminService";
-import { toast } from "react-toastify"; // Pastikan install react-toastify atau ganti dengan alert biasa
 
 const AdminSettingsPage = () => {
   const [loading, setLoading] = useState(true);
   const [year, setYear] = useState(new Date().getFullYear());
   const [seq, setSeq] = useState(0);
 
-  // Load data saat halaman dibuka
   useEffect(() => {
     fetchConfig();
   }, []);
@@ -22,7 +20,7 @@ const AdminSettingsPage = () => {
       setSeq(seqData.seq);
     } catch (error) {
       console.error(error);
-      toast.error("Gagal mengambil data pengaturan.");
+      alert("Gagal mengambil data pengaturan.");
     } finally {
       setLoading(false);
     }
@@ -32,9 +30,9 @@ const AdminSettingsPage = () => {
     e.preventDefault();
     try {
       await adminService.updateActiveYear(year);
-      toast.success("Tahun penomoran berhasil diperbarui!");
+      alert("Tahun penomoran berhasil diperbarui!");
     } catch (error) {
-      toast.error("Gagal update tahun.");
+      alert("Gagal update tahun.");
     }
   };
 
@@ -49,9 +47,9 @@ const AdminSettingsPage = () => {
 
     try {
       await adminService.updateLastSequence(seq);
-      toast.success("Urutan nomor berhasil diperbarui!");
+      alert("Urutan nomor berhasil diperbarui!");
     } catch (error) {
-      toast.error("Gagal update nomor urut.");
+      alert("Gagal update nomor urut.");
     }
   };
 
@@ -65,7 +63,6 @@ const AdminSettingsPage = () => {
       </h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* CARD 1: PENGATURAN TAHUN */}
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <h2 className="text-lg font-semibold mb-4 text-blue-800 border-b pb-2">
             Tahun Surat
@@ -97,7 +94,6 @@ const AdminSettingsPage = () => {
           </form>
         </div>
 
-        {/* CARD 2: PENGATURAN NOMOR URUT */}
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <h2 className="text-lg font-semibold mb-4 text-red-800 border-b pb-2">
             Reset / Edit Nomor Urut
