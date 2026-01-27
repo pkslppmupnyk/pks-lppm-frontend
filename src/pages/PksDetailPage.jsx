@@ -160,12 +160,12 @@ export default function PksDetailPage() {
               onClick={() =>
                 handleStatusUpdate(
                   "menunggu dokumen",
-                  "Draft disetujui, menunggu unggah dokumen."
+                  "Draft disetujui, menunggu unggah dokumen.",
                 )
               }
               className="w-full px-4 py-2 font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700"
             >
-              Setujui Draft
+              Setujui Draft & Berikan Nomor
             </button>
             <button
               onClick={() =>
@@ -296,9 +296,9 @@ export default function PksDetailPage() {
               value={
                 content?.tanggal && content?.tanggalKadaluarsa
                   ? `${new Date(content.tanggal).toLocaleDateString(
-                      "id-ID"
+                      "id-ID",
                     )} - ${new Date(
-                      content.tanggalKadaluarsa
+                      content.tanggalKadaluarsa,
                     ).toLocaleDateString("id-ID")}`
                   : "-"
               }
