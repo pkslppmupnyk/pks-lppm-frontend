@@ -22,10 +22,23 @@ export default function EditPksPage() {
       try {
         setLoading(true);
         const pksData = await pksService.getPksById(id);
+
+        // NORMALISASI DATA: Pastikan object 'mou' ada meskipun data lama belum punya
+        if (!pksData.mou) {
+          pksData.mou = {
+            hasMoU: false,
+            nomorUpn: "",
+            nomorMitra: "",
+            judul: "",
+            tanggalMulai: "",
+            tanggalSelesai: "",
+          };
+        }
+
         setFormData(pksData);
         if (pksData.logoUpload?.fileName) {
           setLogoPreview(
-            `${API_URL}/uploads/logos/${pksData.logoUpload.fileName}`
+            `${API_URL}/uploads/logos/${pksData.logoUpload.fileName}`,
           );
         }
       } catch (error) {
@@ -38,13 +51,17 @@ export default function EditPksPage() {
   }, [id]);
 
   const handleChange = (e) => {
-    const { name, value, dataset } = e.target;
+    const { name, value, type, checked, dataset } = e.target;
     const { section } = dataset;
+
+    // Logic untuk checkbox vs text input
+    const finalValue = type === "checkbox" ? checked : value;
+
     setFormData((prev) => ({
       ...prev,
       [section]: {
         ...prev[section],
-        [name]: value,
+        [name]: finalValue,
       },
     }));
   };
@@ -57,6 +74,7 @@ export default function EditPksPage() {
     }
   };
 
+  // ... (handleLogoUpload dan handleLogoDelete SAMA SEPERTI SEBELUMNYA) ...
   const handleLogoUpload = async () => {
     if (!logoFile) return;
     setLogoLoading(true);
@@ -94,10 +112,28 @@ export default function EditPksPage() {
     setSaveLoading(true);
     setMessage({ type: "", text: "" });
 
+    // Validasi MoU
+    if (formData.mou.hasMoU) {
+      if (
+        !formData.mou.nomorUpn ||
+        !formData.mou.nomorMitra ||
+        !formData.mou.judul ||
+        !formData.mou.tanggalMulai
+      ) {
+        setMessage({
+          type: "error",
+          text: "Data MoU wajib diisi lengkap jika opsi MoU dicentang.",
+        });
+        setSaveLoading(false);
+        return;
+      }
+    }
+
     const payload = {
       content: formData.content,
       pihakKedua: formData.pihakKedua,
       properties: formData.properties,
+      mou: formData.mou, // JANGAN LUPA SERTAKAN INI
     };
 
     try {
@@ -140,9 +176,97 @@ export default function EditPksPage() {
           <p className="text-gray-500">{displayNomor}</p>
         </div>
         <form onSubmit={handleSubmit} className="space-y-8">
+          {/* --- BAGIAN 1: MOU --- */}
+          <fieldset className="p-4 border border-blue-200 bg-blue-50 rounded-md">
+            <legend className="px-2 font-semibold text-lg text-blue-800">
+              Dasar MoU (Memorandum of Understanding)
+            </legend>
+
+            <div className="mb-4">
+              <label className="inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  name="hasMoU"
+                  data-section="mou"
+                  checked={formData.mou?.hasMoU || false}
+                  onChange={handleChange}
+                  className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500 border-gray-300"
+                />
+                <span className="ml-2 text-gray-700 font-medium">
+                  PKS ini memiliki dasar MoU Induk
+                </span>
+              </label>
+            </div>
+
+            {formData.mou?.hasMoU && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label>Nomor MoU (UPN)*</label>
+                  <input
+                    type="text"
+                    name="nomorUpn"
+                    value={formData.mou.nomorUpn || ""}
+                    data-section="mou"
+                    onChange={handleChange}
+                    required={formData.mou.hasMoU}
+                    className={inputClass}
+                  />
+                </div>
+                <div>
+                  <label>Nomor MoU (Mitra)*</label>
+                  <input
+                    type="text"
+                    name="nomorMitra"
+                    value={formData.mou.nomorMitra || ""}
+                    data-section="mou"
+                    onChange={handleChange}
+                    required={formData.mou.hasMoU}
+                    className={inputClass}
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label>Judul MoU*</label>
+                  <input
+                    type="text"
+                    name="judul"
+                    value={formData.mou.judul || ""}
+                    data-section="mou"
+                    onChange={handleChange}
+                    required={formData.mou.hasMoU}
+                    className={inputClass}
+                  />
+                </div>
+                <div>
+                  <label>Tanggal Mulai MoU*</label>
+                  <input
+                    type="date"
+                    name="tanggalMulai"
+                    value={formData.mou.tanggalMulai?.substring(0, 10) || ""}
+                    data-section="mou"
+                    onChange={handleChange}
+                    required={formData.mou.hasMoU}
+                    className={inputClass}
+                  />
+                </div>
+                <div>
+                  <label>Tanggal Selesai MoU</label>
+                  <input
+                    type="date"
+                    name="tanggalSelesai"
+                    value={formData.mou.tanggalSelesai?.substring(0, 10) || ""}
+                    data-section="mou"
+                    onChange={handleChange}
+                    className={inputClass}
+                  />
+                </div>
+              </div>
+            )}
+          </fieldset>
+
+          {/* --- BAGIAN 2: PKS (Tetap Sama) --- */}
           <fieldset className="p-4 border rounded-md">
             <legend className="px-2 font-semibold text-lg text-gray-700">
-              Detail Perjanjian
+              Detail Perjanjian (PKS)
             </legend>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
@@ -178,7 +302,6 @@ export default function EditPksPage() {
                   data-section="properties"
                   onChange={handleChange}
                   className={inputClass}
-                  placeholder="Kontak WhatsApp pengaju"
                 />
               </div>
               <div>
@@ -218,12 +341,11 @@ export default function EditPksPage() {
                   <option value="dalam negeri">Dalam Negeri</option>
                   <option value="luar negeri">Luar Negeri</option>
                 </select>
-                <small className="text-gray-500">
-                  Mengubah cakupan akan mengubah nomor PKS.
-                </small>
               </div>
             </div>
           </fieldset>
+
+          {/* --- BAGIAN 3: PIHAK KEDUA & LOGO (Tetap Sama) --- */}
           <fieldset className="p-4 border rounded-md">
             <legend className="px-2 font-semibold text-lg text-gray-700">
               Informasi Pihak Kedua
@@ -289,6 +411,7 @@ export default function EditPksPage() {
               </div>
             </div>
           </fieldset>
+
           <fieldset className="p-4 border rounded-md">
             <legend className="px-2 font-semibold text-lg text-gray-700">
               Logo Instansi Pihak Kedua
@@ -336,6 +459,7 @@ export default function EditPksPage() {
               </div>
             </div>
           </fieldset>
+
           {message.text && (
             <div
               className={`p-4 rounded-md text-center ${

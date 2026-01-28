@@ -7,7 +7,7 @@ import PdfViewer from "../components/PdfViewer";
 import { API_URL } from "../services/apiClient";
 
 const DetailRow = ({ label, value, className }) => (
-  <div className="py-2">
+  <div className="py-2 border-b border-gray-100 last:border-0">
     <dt className="text-sm font-medium text-gray-500">{label}</dt>
     <dd className={`mt-1 text-md text-gray-900 ${className || ""}`}>
       {value || "-"}
@@ -29,6 +29,8 @@ export default function PksDetailPage() {
   const [pks, setPks] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // State modals
   const [isCommentModalOpen, setIsCommentModalOpen] = useState(false);
   const [modalContent, setModalContent] = useState({
     title: "",
@@ -66,6 +68,7 @@ export default function PksDetailPage() {
     fetchPks();
   }, [fetchPks]);
 
+  // ... (Fungsi openCommentModal, handleStatusUpdate, dll SAMA SEPERTI SEBELUMNYA) ...
   const openCommentModal = (config) => {
     setModalContent(config);
     setComment("");
@@ -165,7 +168,7 @@ export default function PksDetailPage() {
               }
               className="w-full px-4 py-2 font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700"
             >
-              Setujui Draft & Berikan Nomor
+              Setujui Draft
             </button>
             <button
               onClick={() =>
@@ -238,6 +241,7 @@ export default function PksDetailPage() {
     properties = {},
     fileUpload = {},
     logoUpload = {},
+    mou = {}, // Ambil data MoU
   } = pks;
 
   const handleDownload = () => pksService.downloadFile(id, fileUpload?.docName);
@@ -253,15 +257,75 @@ export default function PksDetailPage() {
   const detailContent = (
     <div className="bg-white shadow-md rounded-lg p-6">
       <div className="border-b pb-4 mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">{content?.judul}</h1>
-        <p className="text-gray-500">{displayNomor}</p>
+        <div className="flex justify-between items-start">
+          <h1 className="text-2xl font-bold text-gray-800 flex-1 mr-4">
+            {content?.judul}
+          </h1>
+          {mou?.hasMoU && (
+            <span className="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded">
+              Ada MoU
+            </span>
+          )}
+        </div>
+        <p className="text-gray-500 font-mono mt-1">{displayNomor}</p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <div className="md:col-span-2 space-y-4">
+        <div className="md:col-span-2 space-y-6">
+          {/* 1. INFORMASI MoU (JIKA ADA) */}
+          {mou?.hasMoU && (
+            <div className="bg-blue-50 border border-blue-100 rounded-lg p-4">
+              <h3 className="font-semibold text-blue-800 mb-2 flex items-center">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  className="w-5 h-5 mr-1"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 2a8 8 0 100 16 8 8 0 000-16zm.75 11.25a.75.75 0 01-1.5 0v-2.5a.75.75 0 011.5 0v2.5zm0-6a.75.75 0 01-1.5 0V6a.75.75 0 011.5 0v1.25z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                Dasar MoU
+              </h3>
+              <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
+                <DetailRow
+                  label="Judul MoU"
+                  value={mou.judul}
+                  className="sm:col-span-2"
+                />
+                <DetailRow label="No. MoU UPN" value={mou.nomorUpn} />
+                <DetailRow label="No. MoU Mitra" value={mou.nomorMitra} />
+                <DetailRow
+                  label="Tgl Mulai MoU"
+                  value={
+                    mou.tanggalMulai
+                      ? new Date(mou.tanggalMulai).toLocaleDateString("id-ID")
+                      : "-"
+                  }
+                />
+                <DetailRow
+                  label="Tgl Selesai MoU"
+                  value={
+                    mou.tanggalSelesai
+                      ? new Date(mou.tanggalSelesai).toLocaleDateString("id-ID")
+                      : "-"
+                  }
+                />
+              </dl>
+            </div>
+          )}
+
+          {/* 2. DETAIL UTAMA */}
           <dl>
             <DetailRow
               label="Status Saat Ini"
-              value={properties?.status?.toUpperCase()}
+              value={
+                <span className="font-bold uppercase text-blue-600">
+                  {properties?.status}
+                </span>
+              }
             />
             <DetailRow label="Komentar Terakhir" value={properties?.comment} />
             <DetailRow
@@ -270,29 +334,7 @@ export default function PksDetailPage() {
               className="capitalize"
             />
             <DetailRow
-              label="Instansi Pihak Kedua"
-              value={pihakKedua?.instansi}
-            />
-            {logoUpload?.fileName && (
-              <div className="py-2">
-                <dt className="text-sm font-medium text-gray-500">Logo</dt>
-                <dd className="mt-1">
-                  <img
-                    src={`${API_URL}/uploads/logos/${logoUpload.fileName}`}
-                    alt="Logo Instansi"
-                    className="max-h-20 border rounded p-1"
-                  />
-                </dd>
-              </div>
-            )}
-            <DetailRow
-              label="Penanggung Jawab"
-              value={`${pihakKedua?.nama || ""} (${pihakKedua?.jabatan || ""})`}
-            />
-            <DetailRow label="Email Kontak" value={properties?.email} />
-            <DetailRow label="Nomor WhatsApp" value={properties?.telepon} />
-            <DetailRow
-              label="Tanggal Berlaku"
+              label="Tanggal Berlaku PKS"
               value={
                 content?.tanggal && content?.tanggalKadaluarsa
                   ? `${new Date(content.tanggal).toLocaleDateString(
@@ -303,12 +345,46 @@ export default function PksDetailPage() {
                   : "-"
               }
             />
-            <DetailRow label="Alamat" value={pihakKedua?.alamat} />
           </dl>
+
+          {/* 3. INFORMASI PIHAK KEDUA */}
+          <div className="pt-4 border-t">
+            <h3 className="font-semibold text-gray-700 mb-2">Pihak Kedua</h3>
+            <dl>
+              <DetailRow
+                label="Instansi Pihak Kedua"
+                value={pihakKedua?.instansi}
+              />
+              <DetailRow
+                label="Penanggung Jawab"
+                value={`${pihakKedua?.nama || ""} (${pihakKedua?.jabatan || ""})`}
+              />
+              <DetailRow label="Alamat" value={pihakKedua?.alamat} />
+              <DetailRow label="Email Kontak" value={properties?.email} />
+              <DetailRow label="Nomor WhatsApp" value={properties?.telepon} />
+              {logoUpload?.fileName && (
+                <div className="py-2">
+                  <dt className="text-sm font-medium text-gray-500">
+                    Logo Mitra
+                  </dt>
+                  <dd className="mt-1">
+                    <img
+                      src={`${API_URL}/uploads/logos/${logoUpload.fileName}`}
+                      alt="Logo Instansi"
+                      className="max-h-20 border rounded p-1"
+                    />
+                  </dd>
+                </div>
+              )}
+            </dl>
+          </div>
         </div>
+
+        {/* --- KOLOM KANAN (AKSI) --- */}
         <div className="md:col-span-1 space-y-4">
           <h3 className="font-semibold text-lg border-b pb-2">Aksi Utama</h3>
           {renderActionButtons()}
+
           <h3 className="font-semibold text-lg border-b pb-2 pt-4">
             Aksi Dokumen
           </h3>
@@ -318,15 +394,16 @@ export default function PksDetailPage() {
           >
             Generate Dokumen (.docx)
           </button>
+
           {fileUpload?.fileName && (
             <div className="mt-4 pt-4 border-t">
               <h4 className="text-sm font-semibold text-gray-600 mb-2">
                 File Tersimpan:
               </h4>
-              <div className="flex items-center bg-gray-50 p-2 rounded-md">
+              <div className="flex items-center bg-gray-50 p-2 rounded-md border">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6 text-red-500 mr-3"
+                  className="h-6 w-6 text-red-500 mr-3 flex-shrink-0"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -338,7 +415,10 @@ export default function PksDetailPage() {
                     d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                   />
                 </svg>
-                <span className="text-sm text-gray-800 truncate">
+                <span
+                  className="text-sm text-gray-800 truncate"
+                  title={fileUpload.docName}
+                >
                   {fileUpload.docName}
                 </span>
               </div>
@@ -350,6 +430,7 @@ export default function PksDetailPage() {
               </button>
             </div>
           )}
+
           <div className="pt-4 border-t mt-6">
             <h3 className="font-semibold text-lg text-red-600">
               Zona Berbahaya
@@ -400,13 +481,14 @@ export default function PksDetailPage() {
           {properties.status === "menunggu review" && (
             <div className="mt-8 bg-gray-100 p-4 rounded-lg flex items-center justify-center h-96">
               <p className="text-gray-500 text-center">
-                PDF tidak ditemukan, tidak bisa tertampil.
+                PDF tidak ditemukan atau belum diunggah.
               </p>
             </div>
           )}
         </>
       )}
 
+      {/* --- MODALS (SAMA SEPERTI SEBELUMNYA) --- */}
       <Modal
         isOpen={isCommentModalOpen}
         onClose={() => setIsCommentModalOpen(false)}
@@ -448,6 +530,7 @@ export default function PksDetailPage() {
           </div>
         </form>
       </Modal>
+
       <Modal
         isOpen={isEmergencyModalOpen}
         onClose={() => setIsEmergencyModalOpen(false)}
@@ -513,6 +596,7 @@ export default function PksDetailPage() {
           </div>
         </form>
       </Modal>
+
       <Modal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
@@ -548,6 +632,7 @@ export default function PksDetailPage() {
           </button>
         </div>
       </Modal>
+
       <Modal
         isOpen={isFileDeleteModalOpen}
         onClose={() => setIsFileDeleteModalOpen(false)}
