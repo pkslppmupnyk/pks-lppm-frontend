@@ -7,8 +7,8 @@ export default function SubmitPksPage() {
   const [formData, setFormData] = useState({
     content: {
       judul: "",
-      bentukKerjaSama: [], // Diubah menjadi array sesuai model
-      jenisPengabdian: "", // Field baru
+      bentukKerjaSama: [],
+      jenisPengabdian: "",
       tanggal: "",
       tanggalKadaluarsa: "",
     },
@@ -46,7 +46,6 @@ export default function SubmitPksPage() {
     const { name, value, type, checked, dataset } = e.target;
     const { section } = dataset;
 
-    // Jika type checkbox (untuk hasMoU), gunakan checked
     const finalValue = type === "checkbox" ? checked : value;
 
     setFormData((prev) => ({
@@ -66,10 +65,8 @@ export default function SubmitPksPage() {
       let newArr;
 
       if (checked) {
-        // Tambah value ke array
         newArr = [...currentArr, value];
       } else {
-        // Hapus value dari array
         newArr = currentArr.filter((item) => item !== value);
       }
 
@@ -140,7 +137,18 @@ export default function SubmitPksPage() {
     }
 
     try {
-      const createResponse = await pksService.createPks(formData);
+      // --- PERBAIKAN UTAMA DI SINI ---
+      // Kita buat salinan payload agar tidak memutasi state
+      const payload = JSON.parse(JSON.stringify(formData));
+
+      // Jika "Pengabdian Masyarakat" TIDAK dipilih, hapus field jenisPengabdian
+      // agar backend tidak memvalidasi Enum string kosong ("")
+      if (!payload.content.bentukKerjaSama.includes("Pengabdian Masyarakat")) {
+        delete payload.content.jenisPengabdian;
+      }
+      // -------------------------------
+
+      const createResponse = await pksService.createPks(payload);
       const newPksId = createResponse.data?._id;
 
       if (!newPksId) throw new Error("Gagal mendapatkan ID PKS.");
@@ -151,11 +159,13 @@ export default function SubmitPksPage() {
 
       setMessage({
         type: "success",
-        text: "PKS berhasil diajukan! Mengalihkan...",
+        text: "PKS berhasil diajukan! Mengalihkan ke Dashboard...",
       });
 
       setTimeout(() => {
-        navigate(`/admin/pks/${newPksId}`);
+        // --- PERBAIKAN NAVIGASI ---
+        // Redirect ke dashboard, bukan ke detail PKS
+        navigate("/admin/dashboard");
       }, 2000);
     } catch (err) {
       setMessage({
@@ -276,7 +286,6 @@ export default function SubmitPksPage() {
               Detail Perjanjian (PKS)
             </legend>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* === UPDATE STRUKTUR BARU MULAI SINI === */}
               <div className="md:col-span-2">
                 <label className="block mb-2 font-medium text-gray-700">
                   Bentuk Kerja Sama (Pilih Minimal 1)*
@@ -353,7 +362,6 @@ export default function SubmitPksPage() {
                   placeholder="Judul lengkap dokumen PKS"
                 />
               </div>
-              {/* === UPDATE SELESAI === */}
 
               <div>
                 <label>Email Pemberitahuan*</label>
