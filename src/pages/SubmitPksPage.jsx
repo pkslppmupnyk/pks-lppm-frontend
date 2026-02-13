@@ -158,19 +158,13 @@ export default function SubmitPksPage() {
 
       setMessage({
         type: "success",
-        text: "PKS berhasil diajukan! Mengalihkan...",
+        text: "PKS berhasil diajukan! Mengalihkan ke Beranda...",
       });
 
       setTimeout(() => {
         // --- LOGIKA NAVIGASI (REVISI) ---
-        const token = localStorage.getItem("authToken");
-        if (token) {
-          // Jika Admin, ke Dashboard Admin
-          navigate("/admin/dashboard");
-        } else {
-          // Jika User Umum, ke Halaman Utama (Home)
-          navigate("/");
-        }
+        // Langsung arahkan ke Halaman Utama (Home) sesuai request
+        navigate("/");
       }, 2000);
     } catch (err) {
       setMessage({
