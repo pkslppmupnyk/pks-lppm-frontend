@@ -68,7 +68,6 @@ export default function PksDetailPage() {
     fetchPks();
   }, [fetchPks]);
 
-  // ... (Fungsi openCommentModal, handleStatusUpdate, dll SAMA SEPERTI SEBELUMNYA) ...
   const openCommentModal = (config) => {
     setModalContent(config);
     setComment("");
@@ -241,7 +240,7 @@ export default function PksDetailPage() {
     properties = {},
     fileUpload = {},
     logoUpload = {},
-    mou = {}, // Ambil data MoU
+    mou = {},
   } = pks;
 
   const handleDownload = () => pksService.downloadFile(id, fileUpload?.docName);
@@ -253,6 +252,12 @@ export default function PksDetailPage() {
       : null;
 
   const displayNomor = content.nomor ? content.nomor.replace(/-/g, "/") : "-";
+
+  // Logic display Bentuk Kerja Sama (karena Array)
+  const displayBentukKerjaSama =
+    Array.isArray(content.bentukKerjaSama) && content.bentukKerjaSama.length > 0
+      ? content.bentukKerjaSama.join(", ")
+      : "-";
 
   const detailContent = (
     <div className="bg-white shadow-md rounded-lg p-6">
@@ -327,6 +332,19 @@ export default function PksDetailPage() {
                 </span>
               }
             />
+            {/* === UPDATE: MENAMPILKAN BENTUK KERJASAMA & JENIS PENGABDIAN === */}
+            <DetailRow
+              label="Bentuk Kerja Sama"
+              value={displayBentukKerjaSama}
+              className="font-medium"
+            />
+            {content.jenisPengabdian && (
+              <DetailRow
+                label="Jenis Pengabdian"
+                value={content.jenisPengabdian}
+              />
+            )}
+            {/* === END UPDATE === */}
             <DetailRow label="Komentar Terakhir" value={properties?.comment} />
             <DetailRow
               label="Cakupan Kerjasama"
@@ -488,7 +506,7 @@ export default function PksDetailPage() {
         </>
       )}
 
-      {/* --- MODALS (SAMA SEPERTI SEBELUMNYA) --- */}
+      {/* --- MODALS --- */}
       <Modal
         isOpen={isCommentModalOpen}
         onClose={() => setIsCommentModalOpen(false)}

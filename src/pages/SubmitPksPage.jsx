@@ -7,6 +7,8 @@ export default function SubmitPksPage() {
   const [formData, setFormData] = useState({
     content: {
       judul: "",
+      bentukKerjaSama: [], // Diubah menjadi array sesuai model
+      jenisPengabdian: "", // Field baru
       tanggal: "",
       tanggalKadaluarsa: "",
     },
@@ -23,7 +25,7 @@ export default function SubmitPksPage() {
       reminderDate: "",
       cakupanKerjaSama: "dalam negeri",
     },
-    // --- TAMBAHAN DATA MOU ---
+    // --- DATA MOU ---
     mou: {
       hasMoU: false,
       nomorUpn: "",
@@ -39,12 +41,12 @@ export default function SubmitPksPage() {
   const [message, setMessage] = useState({ type: "", text: "" });
   const navigate = useNavigate();
 
-  // Handle input change (termasuk checkbox)
+  // Handle input change umum
   const handleChange = (e) => {
     const { name, value, type, checked, dataset } = e.target;
     const { section } = dataset;
 
-    // Jika type checkbox, gunakan checked, jika tidak gunakan value
+    // Jika type checkbox (untuk hasMoU), gunakan checked
     const finalValue = type === "checkbox" ? checked : value;
 
     setFormData((prev) => ({
@@ -56,6 +58,38 @@ export default function SubmitPksPage() {
     }));
   };
 
+  // Handle khusus untuk Checkbox Array (Bentuk Kerja Sama)
+  const handleBentukKerjaSamaChange = (e) => {
+    const { value, checked } = e.target;
+    setFormData((prev) => {
+      const currentArr = prev.content.bentukKerjaSama || [];
+      let newArr;
+
+      if (checked) {
+        // Tambah value ke array
+        newArr = [...currentArr, value];
+      } else {
+        // Hapus value dari array
+        newArr = currentArr.filter((item) => item !== value);
+      }
+
+      // Reset jenisPengabdian jika "Pengabdian Masyarakat" di-uncheck
+      const shouldResetJenis =
+        !checked && value === "Pengabdian Masyarakat"
+          ? ""
+          : prev.content.jenisPengabdian;
+
+      return {
+        ...prev,
+        content: {
+          ...prev.content,
+          bentukKerjaSama: newArr,
+          jenisPengabdian: shouldResetJenis,
+        },
+      };
+    });
+  };
+
   const handleLogoChange = (e) => {
     setLogoFile(e.target.files[0]);
   };
@@ -65,7 +99,7 @@ export default function SubmitPksPage() {
     setLoading(true);
     setMessage({ type: "", text: "" });
 
-    // Validasi Manual untuk MoU jika hasMoU true (backup validasi frontend)
+    // 1. Validasi MoU
     if (formData.mou.hasMoU) {
       if (
         !formData.mou.nomorUpn ||
@@ -75,11 +109,34 @@ export default function SubmitPksPage() {
       ) {
         setMessage({
           type: "error",
-          text: "Mohon lengkapi data MoU (Nomor, Judul, Tanggal Mulai) karena Anda mencentang opsi ada MoU.",
+          text: "Mohon lengkapi data MoU (Nomor, Judul, Tanggal Mulai).",
         });
         setLoading(false);
         return;
       }
+    }
+
+    // 2. Validasi Bentuk Kerja Sama
+    if (formData.content.bentukKerjaSama.length === 0) {
+      setMessage({
+        type: "error",
+        text: "Pilih minimal satu Bentuk Kerja Sama (Penelitian atau Pengabdian).",
+      });
+      setLoading(false);
+      return;
+    }
+
+    // 3. Validasi Jenis Pengabdian
+    if (
+      formData.content.bentukKerjaSama.includes("Pengabdian Masyarakat") &&
+      !formData.content.jenisPengabdian
+    ) {
+      setMessage({
+        type: "error",
+        text: "Anda memilih Pengabdian Masyarakat, wajib memilih Jenis Pengabdian.",
+      });
+      setLoading(false);
+      return;
     }
 
     try {
@@ -98,7 +155,7 @@ export default function SubmitPksPage() {
       });
 
       setTimeout(() => {
-        navigate(`/admin/pks/${newPksId}`); // Redirect ke detail (bukan tracking public) agar admin bisa langsung cek
+        navigate(`/admin/pks/${newPksId}`);
       }, 2000);
     } catch (err) {
       setMessage({
@@ -128,7 +185,7 @@ export default function SubmitPksPage() {
           </Link>
         </div>
         <form onSubmit={handleSubmit} className="space-y-8">
-          {/* --- BAGIAN 1: MOU MENAUNGI (BARU) --- */}
+          {/* --- BAGIAN 1: MOU MENAUNGI --- */}
           <fieldset className="p-4 border border-blue-200 bg-blue-50 rounded-md">
             <legend className="px-2 font-semibold text-lg text-blue-800">
               Dasar MoU (Memorandum of Understanding)
@@ -219,7 +276,72 @@ export default function SubmitPksPage() {
               Detail Perjanjian (PKS)
             </legend>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
+              {/* === UPDATE STRUKTUR BARU MULAI SINI === */}
+              <div className="md:col-span-2">
+                <label className="block mb-2 font-medium text-gray-700">
+                  Bentuk Kerja Sama (Pilih Minimal 1)*
+                </label>
+                <div className="flex gap-6">
+                  <label className="inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      value="Penelitian"
+                      checked={formData.content.bentukKerjaSama.includes(
+                        "Penelitian",
+                      )}
+                      onChange={handleBentukKerjaSamaChange}
+                      className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    />
+                    <span className="ml-2 text-gray-700">Penelitian</span>
+                  </label>
+                  <label className="inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      value="Pengabdian Masyarakat"
+                      checked={formData.content.bentukKerjaSama.includes(
+                        "Pengabdian Masyarakat",
+                      )}
+                      onChange={handleBentukKerjaSamaChange}
+                      className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    />
+                    <span className="ml-2 text-gray-700">
+                      Pengabdian Masyarakat
+                    </span>
+                  </label>
+                </div>
+              </div>
+
+              {/* Tampilkan Jenis Pengabdian HANYA jika checkbox Pengabdian Masyarakat dipilih */}
+              {formData.content.bentukKerjaSama.includes(
+                "Pengabdian Masyarakat",
+              ) && (
+                <div className="md:col-span-2 animate-fade-in-down">
+                  <label className="block mb-1 font-medium text-gray-700">
+                    Jenis Pengabdian*
+                  </label>
+                  <select
+                    name="jenisPengabdian"
+                    data-section="content"
+                    value={formData.content.jenisPengabdian}
+                    onChange={handleChange}
+                    required
+                    className={inputClass}
+                  >
+                    <option value="">-- Pilih Jenis Pengabdian --</option>
+                    <option value="Pengabdian bagi Masyarakat Umum">
+                      Pengabdian bagi Masyarakat Umum
+                    </option>
+                    <option value="Pengabdian bagi Masyarakat Industri">
+                      Pengabdian bagi Masyarakat Industri
+                    </option>
+                    <option value="Pengabdian bagi Masyarakat Kerja Sama Pemerintah">
+                      Pengabdian bagi Masyarakat Kerja Sama Pemerintah
+                    </option>
+                  </select>
+                </div>
+              )}
+
+              <div className="md:col-span-2">
                 <label>Judul Kerjasama (PKS)*</label>
                 <input
                   type="text"
@@ -228,8 +350,11 @@ export default function SubmitPksPage() {
                   onChange={handleChange}
                   required
                   className={inputClass}
+                  placeholder="Judul lengkap dokumen PKS"
                 />
               </div>
+              {/* === UPDATE SELESAI === */}
+
               <div>
                 <label>Email Pemberitahuan*</label>
                 <input
@@ -298,7 +423,7 @@ export default function SubmitPksPage() {
                   className={inputClass}
                 />
                 <small className="text-gray-500">
-                  Email akan dikirim pada tanggal ini.
+                  Email notifikasi akan dikirim pada tanggal ini.
                 </small>
               </div>
             </div>
