@@ -142,7 +142,7 @@ export default function SubmitPksPage() {
     try {
       const payload = JSON.parse(JSON.stringify(formData));
 
-      // Hapus field jenisPengabdian jika tidak relevan agar tidak kena validasi enum
+      // Hapus field jenisPengabdian jika tidak relevan
       if (!payload.content.bentukKerjaSama.includes("Pengabdian Masyarakat")) {
         delete payload.content.jenisPengabdian;
       }
@@ -162,11 +162,13 @@ export default function SubmitPksPage() {
       });
 
       setTimeout(() => {
-        // --- LOGIKA NAVIGASI (REVISI) ---
-        // Langsung arahkan ke Halaman Utama (Home) sesuai request
+        // --- REVISI FINAL: SELALU KE HOME ---
+        // Tidak peduli ada token atau tidak, user diarahkan ke Landing Page
         navigate("/");
       }, 2000);
     } catch (err) {
+      // Jika error 401 (Unauthorized) karena token expired, user tetap diberi info
+      // tapi tidak akan redirect otomatis kecuali ada interceptor lain.
       setMessage({
         type: "error",
         text: err.message || "Gagal mengajukan PKS.",
