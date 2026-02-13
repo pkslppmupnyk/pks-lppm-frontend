@@ -41,6 +41,9 @@ export default function SubmitPksPage() {
   const [message, setMessage] = useState({ type: "", text: "" });
   const navigate = useNavigate();
 
+  // Cek status login untuk navigasi UI
+  const isLoggedIn = !!localStorage.getItem("authToken");
+
   // Handle input change umum
   const handleChange = (e) => {
     const { name, value, type, checked, dataset } = e.target;
@@ -137,16 +140,12 @@ export default function SubmitPksPage() {
     }
 
     try {
-      // --- PERBAIKAN UTAMA DI SINI ---
-      // Kita buat salinan payload agar tidak memutasi state
       const payload = JSON.parse(JSON.stringify(formData));
 
-      // Jika "Pengabdian Masyarakat" TIDAK dipilih, hapus field jenisPengabdian
-      // agar backend tidak memvalidasi Enum string kosong ("")
+      // Hapus field jenisPengabdian jika tidak relevan agar tidak kena validasi enum
       if (!payload.content.bentukKerjaSama.includes("Pengabdian Masyarakat")) {
         delete payload.content.jenisPengabdian;
       }
-      // -------------------------------
 
       const createResponse = await pksService.createPks(payload);
       const newPksId = createResponse.data?._id;
@@ -159,13 +158,19 @@ export default function SubmitPksPage() {
 
       setMessage({
         type: "success",
-        text: "PKS berhasil diajukan! Mengalihkan ke Dashboard...",
+        text: "PKS berhasil diajukan! Mengalihkan...",
       });
 
       setTimeout(() => {
-        // --- PERBAIKAN NAVIGASI ---
-        // Redirect ke dashboard, bukan ke detail PKS
-        navigate("/admin/dashboard");
+        // --- LOGIKA NAVIGASI (REVISI) ---
+        const token = localStorage.getItem("authToken");
+        if (token) {
+          // Jika Admin, ke Dashboard Admin
+          navigate("/admin/dashboard");
+        } else {
+          // Jika User Umum, ke Halaman Utama (Home)
+          navigate("/");
+        }
       }, 2000);
     } catch (err) {
       setMessage({
@@ -188,10 +193,10 @@ export default function SubmitPksPage() {
             Form Pengajuan PKS
           </h2>
           <Link
-            to="/admin/dashboard"
+            to={isLoggedIn ? "/admin/dashboard" : "/"}
             className="text-sm text-blue-600 hover:underline"
           >
-            &larr; Kembali ke Dashboard
+            &larr; Kembali ke {isLoggedIn ? "Dashboard" : "Beranda"}
           </Link>
         </div>
         <form onSubmit={handleSubmit} className="space-y-8">
@@ -320,7 +325,6 @@ export default function SubmitPksPage() {
                 </div>
               </div>
 
-              {/* Tampilkan Jenis Pengabdian HANYA jika checkbox Pengabdian Masyarakat dipilih */}
               {formData.content.bentukKerjaSama.includes(
                 "Pengabdian Masyarakat",
               ) && (
