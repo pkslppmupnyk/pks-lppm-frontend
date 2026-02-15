@@ -9,6 +9,7 @@ export default function SubmitPksPage() {
       judul: "",
       bentukKerjaSama: [],
       jenisPengabdian: "",
+      hasHakCipta: "",
       tanggal: "",
       tanggalKadaluarsa: "",
     },
@@ -349,6 +350,24 @@ export default function SubmitPksPage() {
                   </select>
                 </div>
               )}
+
+              {/* --- TAMBAHAN CHECKBOX HAK CIPTA --- */}
+              <div className="md:col-span-2 bg-yellow-50 p-3 rounded border border-yellow-200">
+                <label className="inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="hasHakCipta"
+                    data-section="content"
+                    checked={formData.content.hasHakCipta}
+                    onChange={handleChange}
+                    className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500 border-gray-300"
+                  />
+                  <span className="ml-2 text-gray-800 font-medium">
+                    Apakah dokumen kerjasama ini memiliki potensi Hak Cipta?
+                  </span>
+                </label>
+              </div>
+              {/* ----------------------------------- */}
 
               <div className="md:col-span-2">
                 <label>Judul Kerjasama (PKS)*</label>

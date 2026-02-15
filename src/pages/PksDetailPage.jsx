@@ -344,6 +344,32 @@ export default function PksDetailPage() {
                 value={content.jenisPengabdian}
               />
             )}
+
+            <DetailRow
+              label="Bentuk Kerja Sama"
+              value={displayBentukKerjaSama}
+              className="font-medium"
+            />
+            {content.jenisPengabdian && (
+              <DetailRow
+                label="Jenis Pengabdian"
+                value={content.jenisPengabdian}
+              />
+            )}
+            {/* --- TAMBAHAN DISPLAY HAK CIPTA --- */}
+            <DetailRow
+              label="Potensi Hak Cipta"
+              value={
+                content.hasHakCipta ? (
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    Ada Potensi Hak Cipta
+                  </span>
+                ) : (
+                  "Tidak Ada"
+                )
+              }
+            />
+            {/* ---------------------------------- */}
             {/* === END UPDATE === */}
             <DetailRow label="Komentar Terakhir" value={properties?.comment} />
             <DetailRow
