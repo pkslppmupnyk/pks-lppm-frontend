@@ -19,23 +19,32 @@ const PksTablePage = () => {
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [totalItems, setTotalItems] = useState(0); // State baru untuk total data dari DB
 
-  // --- 2. Data Fetching ---
+  // --- 2. Data Fetching (Server-Side Pagination) ---
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        // REVISI: Menggunakan getAllPks (sesuai export di pksService.js)
-        // Sebelumnya: pksService.getAllPksAdmin() -> Function not found
-        const response = await pksService.getAllPks();
 
-        // DEBUGGING: Cek hasil data di console browser
-        console.log("Data PKS Fetched:", response);
+        // REVISI: Kirim parameter page dan limit ke Backend
+        const params = {
+          page: currentPage,
+          limit: itemsPerPage,
+        };
 
-        // Backend mengirim format { data: [...], pagination: {...} }
-        // pksService mengembalikan response.data dari axios,
-        // jadi disini kita ambil properti .data dari object return backend
+        const response = await pksService.getAllPks(params);
+
+        // Backend return format: { data: [...], pagination: { total, page, limit } }
         setPksData(response.data || []);
+
+        // REVISI: Ambil total items dari pagination backend untuk hitung tombol next
+        if (response.pagination) {
+          setTotalItems(response.pagination.total);
+        } else {
+          // Fallback jika backend tidak kirim pagination meta (jaga-jaga)
+          setTotalItems(response.data?.length || 0);
+        }
       } catch (err) {
         console.error("Error fetching PKS data:", err);
         setError("Gagal memuat data PKS. Silakan coba lagi nanti.");
@@ -45,16 +54,22 @@ const PksTablePage = () => {
     };
 
     fetchData();
-  }, []);
+  }, [currentPage, itemsPerPage]); // REVISI: Re-fetch saat page/limit berubah
 
-  // --- 3. Logic Pagination ---
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = pksData.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(pksData.length / itemsPerPage);
+  // --- 3. Logic Pagination (Perhitungan Display) ---
+  // REVISI: Tidak perlu slice data lagi, karena data yang ada di pksData SUDAH per halaman
+  const currentItems = pksData;
+
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+  // Hitung index untuk tampilan "Menampilkan 1 sampai 10 dari 100"
+  const indexOfFirstItem = (currentPage - 1) * itemsPerPage;
+  const indexOfLastItem = indexOfFirstItem + currentItems.length;
 
   const handlePageChange = (pageNumber) => {
-    setCurrentPage(pageNumber);
+    if (pageNumber >= 1 && pageNumber <= totalPages) {
+      setCurrentPage(pageNumber);
+    }
   };
 
   const handleLimitChange = (e) => {
@@ -78,7 +93,7 @@ const PksTablePage = () => {
   const getStatusBadge = (status) => {
     const statusLower = status?.toLowerCase() || "";
 
-    let styles = "bg-gray-100 text-gray-800"; // Default
+    let styles = "bg-gray-100 text-gray-800";
     let label = status || "Draft";
 
     if (
@@ -89,7 +104,6 @@ const PksTablePage = () => {
       statusLower === "menunggu review"
     ) {
       styles = "bg-yellow-100 text-yellow-800 border border-yellow-200";
-      // Format label agar lebih rapi (Capitalize)
       label =
         statusLower === "menunggu dokumen"
           ? "Menunggu Dokumen"
@@ -190,7 +204,7 @@ const PksTablePage = () => {
             <tbody className="divide-y divide-gray-100">
               {loading ? (
                 // Skeleton Loading State
-                [...Array(5)].map((_, i) => (
+                [...Array(itemsPerPage)].map((_, i) => (
                   <tr key={i} className="animate-pulse">
                     <td className="px-6 py-4">
                       <div className="h-4 bg-gray-200 rounded w-8 mx-auto"></div>
@@ -223,10 +237,10 @@ const PksTablePage = () => {
                     className="hover:bg-blue-50/50 transition-colors odd:bg-white even:bg-gray-50"
                   >
                     <td className="px-6 py-4 text-sm text-gray-500 text-center font-medium">
+                      {/* Nomor urut disesuaikan dengan halaman */}
                       {indexOfFirstItem + index + 1}
                     </td>
 
-                    {/* REVISI: Akses ke nested object 'content' */}
                     <td className="px-6 py-4 text-sm font-semibold text-gray-800">
                       {item.content?.judul || "Tanpa Judul"}
                       <div className="text-xs text-gray-400 font-normal mt-0.5">
@@ -234,22 +248,18 @@ const PksTablePage = () => {
                       </div>
                     </td>
 
-                    {/* REVISI: Akses ke nested object 'pihakKedua' */}
                     <td className="px-6 py-4 text-sm text-gray-600">
                       {item.pihakKedua?.instansi || "-"}
                     </td>
 
-                    {/* REVISI: Akses ke Array 'bentukKerjaSama' & join jika lebih dari 1 */}
                     <td className="px-6 py-4 text-sm text-gray-600">
                       {item.content?.bentukKerjaSama?.join(", ") || "-"}
                     </td>
 
-                    {/* REVISI: Akses ke 'content.tanggal' */}
                     <td className="px-6 py-4 text-sm text-gray-600 whitespace-nowrap">
                       {formatDate(item.content?.tanggal)}
                     </td>
 
-                    {/* REVISI: Akses ke 'properties.status' */}
                     <td className="px-6 py-4 text-center">
                       {getStatusBadge(item.properties?.status)}
                     </td>
@@ -293,21 +303,19 @@ const PksTablePage = () => {
         </div>
 
         {/* Footer / Pagination Controls */}
-        {!loading && pksData.length > 0 && (
+        {!loading && (
           <div className="bg-white px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
             <span className="text-sm text-gray-600">
               Menampilkan{" "}
               <span className="font-semibold text-gray-900">
-                {indexOfFirstItem + 1}
+                {totalItems === 0 ? 0 : indexOfFirstItem + 1}
               </span>{" "}
               sampai{" "}
               <span className="font-semibold text-gray-900">
-                {Math.min(indexOfLastItem, pksData.length)}
+                {indexOfLastItem}
               </span>{" "}
               dari{" "}
-              <span className="font-semibold text-gray-900">
-                {pksData.length}
-              </span>{" "}
+              <span className="font-semibold text-gray-900">{totalItems}</span>{" "}
               data
             </span>
 
@@ -320,24 +328,14 @@ const PksTablePage = () => {
                 <ChevronLeft className="w-4 h-4" />
               </button>
 
-              {/* Simple Number Pagination */}
-              {[...Array(totalPages)].map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => handlePageChange(i + 1)}
-                  className={`w-8 h-8 flex items-center justify-center rounded-md text-sm font-medium transition-colors ${
-                    currentPage === i + 1
-                      ? "bg-blue-600 text-white border border-blue-600"
-                      : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
-                  }`}
-                >
-                  {i + 1}
-                </button>
-              ))}
+              {/* Logic Pagination Button (Sederhana) */}
+              <span className="text-sm text-gray-600 px-2">
+                Halaman {currentPage} dari {totalPages || 1}
+              </span>
 
               <button
                 onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages}
+                disabled={currentPage >= totalPages}
                 className="p-2 rounded-md border border-gray-300 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <ChevronRight className="w-4 h-4" />
