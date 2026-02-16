@@ -25,9 +25,16 @@ const PksTablePage = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        // Menggunakan service yang sudah ada
-        const response = await pksService.getAllPksAdmin();
-        // Asumsi response.data berisi array data PKS. Sesuaikan jika strukturnya berbeda (misal response.data.data)
+        // REVISI: Menggunakan getAllPks (sesuai export di pksService.js)
+        // Sebelumnya: pksService.getAllPksAdmin() -> Function not found
+        const response = await pksService.getAllPks();
+
+        // DEBUGGING: Cek hasil data di console browser
+        console.log("Data PKS Fetched:", response);
+
+        // Backend mengirim format { data: [...], pagination: {...} }
+        // pksService mengembalikan response.data dari axios,
+        // jadi disini kita ambil properti .data dari object return backend
         setPksData(response.data || []);
       } catch (err) {
         console.error("Error fetching PKS data:", err);
@@ -77,28 +84,34 @@ const PksTablePage = () => {
     if (
       statusLower.includes("wait") ||
       statusLower.includes("tunggu") ||
-      statusLower.includes("pending")
+      statusLower.includes("pending") ||
+      statusLower === "menunggu dokumen" ||
+      statusLower === "menunggu review"
     ) {
       styles = "bg-yellow-100 text-yellow-800 border border-yellow-200";
-      label = "Menunggu";
+      // Format label agar lebih rapi (Capitalize)
+      label =
+        statusLower === "menunggu dokumen"
+          ? "Menunggu Dokumen"
+          : "Menunggu Review";
     } else if (
       statusLower.includes("act") ||
       statusLower.includes("setuju") ||
       statusLower.includes("approve")
     ) {
       styles = "bg-green-100 text-green-800 border border-green-200";
-      label = "Disetujui";
+      label = "Approved";
     } else if (
       statusLower.includes("tolak") ||
       statusLower.includes("reject")
     ) {
       styles = "bg-red-100 text-red-800 border border-red-200";
-      label = "Ditolak";
+      label = "Rejected";
     }
 
     return (
       <span
-        className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${styles}`}
+        className={`px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${styles}`}
       >
         {label}
       </span>
@@ -212,24 +225,35 @@ const PksTablePage = () => {
                     <td className="px-6 py-4 text-sm text-gray-500 text-center font-medium">
                       {indexOfFirstItem + index + 1}
                     </td>
+
+                    {/* REVISI: Akses ke nested object 'content' */}
                     <td className="px-6 py-4 text-sm font-semibold text-gray-800">
-                      {item.judul || "Tanpa Judul"}
+                      {item.content?.judul || "Tanpa Judul"}
                       <div className="text-xs text-gray-400 font-normal mt-0.5">
-                        {item.nomorPks || "-"}
+                        {item.content?.nomor || "-"}
                       </div>
                     </td>
+
+                    {/* REVISI: Akses ke nested object 'pihakKedua' */}
                     <td className="px-6 py-4 text-sm text-gray-600">
-                      {item.namaMitra || "-"}
+                      {item.pihakKedua?.instansi || "-"}
                     </td>
+
+                    {/* REVISI: Akses ke Array 'bentukKerjaSama' & join jika lebih dari 1 */}
                     <td className="px-6 py-4 text-sm text-gray-600">
-                      {item.jenisPerjanjian || "MoU"}
+                      {item.content?.bentukKerjaSama?.join(", ") || "-"}
                     </td>
+
+                    {/* REVISI: Akses ke 'content.tanggal' */}
                     <td className="px-6 py-4 text-sm text-gray-600 whitespace-nowrap">
-                      {formatDate(item.tanggalMulai)}
+                      {formatDate(item.content?.tanggal)}
                     </td>
+
+                    {/* REVISI: Akses ke 'properties.status' */}
                     <td className="px-6 py-4 text-center">
-                      {getStatusBadge(item.status)}
+                      {getStatusBadge(item.properties?.status)}
                     </td>
+
                     <td className="px-6 py-4 text-center">
                       <div className="flex items-center justify-center gap-2">
                         <Link
