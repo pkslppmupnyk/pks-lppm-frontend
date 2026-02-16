@@ -23,7 +23,8 @@ export default function EditPksPage() {
         setLoading(true);
         const pksData = await pksService.getPksById(id);
 
-        // NORMALISASI DATA: Pastikan object 'mou' ada meskipun data lama belum punya
+        // NORMALISASI DATA:
+        // 1. Pastikan object 'mou' ada
         if (!pksData.mou) {
           pksData.mou = {
             hasMoU: false,
@@ -33,6 +34,10 @@ export default function EditPksPage() {
             tanggalMulai: "",
             tanggalSelesai: "",
           };
+        }
+        // 2. Pastikan bentukKerjaSama adalah array
+        if (!Array.isArray(pksData.content.bentukKerjaSama)) {
+          pksData.content.bentukKerjaSama = [];
         }
 
         setFormData(pksData);
@@ -50,6 +55,7 @@ export default function EditPksPage() {
     fetchPksData();
   }, [id]);
 
+  // Handler Umum
   const handleChange = (e) => {
     const { name, value, type, checked, dataset } = e.target;
     const { section } = dataset;
@@ -66,6 +72,36 @@ export default function EditPksPage() {
     }));
   };
 
+  // Handler Khusus Array Bentuk Kerja Sama (REVISI BARU)
+  const handleBentukKerjaSamaChange = (e) => {
+    const { value, checked } = e.target;
+    setFormData((prev) => {
+      const currentArr = prev.content.bentukKerjaSama || [];
+      let newArr;
+
+      if (checked) {
+        newArr = [...currentArr, value];
+      } else {
+        newArr = currentArr.filter((item) => item !== value);
+      }
+
+      // Reset jenisPengabdian jika "Pengabdian Masyarakat" di-uncheck
+      const shouldResetJenis =
+        !checked && value === "Pengabdian Masyarakat"
+          ? undefined // set undefined agar sesuai model
+          : prev.content.jenisPengabdian;
+
+      return {
+        ...prev,
+        content: {
+          ...prev.content,
+          bentukKerjaSama: newArr,
+          jenisPengabdian: shouldResetJenis,
+        },
+      };
+    });
+  };
+
   const handleLogoChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -74,7 +110,6 @@ export default function EditPksPage() {
     }
   };
 
-  // ... (handleLogoUpload dan handleLogoDelete SAMA SEPERTI SEBELUMNYA) ...
   const handleLogoUpload = async () => {
     if (!logoFile) return;
     setLogoLoading(true);
@@ -129,11 +164,37 @@ export default function EditPksPage() {
       }
     }
 
+    // Validasi Bentuk Kerja Sama (REVISI BARU)
+    if (
+      !formData.content.bentukKerjaSama ||
+      formData.content.bentukKerjaSama.length === 0
+    ) {
+      setMessage({
+        type: "error",
+        text: "Pilih minimal satu Bentuk Kerja Sama.",
+      });
+      setSaveLoading(false);
+      return;
+    }
+
+    // Validasi Jenis Pengabdian (REVISI BARU)
+    if (
+      formData.content.bentukKerjaSama.includes("Pengabdian Masyarakat") &&
+      !formData.content.jenisPengabdian
+    ) {
+      setMessage({
+        type: "error",
+        text: "Jenis Pengabdian wajib dipilih jika Bentuk Kerja Sama mencakup Pengabdian Masyarakat.",
+      });
+      setSaveLoading(false);
+      return;
+    }
+
     const payload = {
       content: formData.content,
       pihakKedua: formData.pihakKedua,
       properties: formData.properties,
-      mou: formData.mou, // JANGAN LUPA SERTAKAN INI
+      mou: formData.mou,
     };
 
     try {
@@ -263,13 +324,14 @@ export default function EditPksPage() {
             )}
           </fieldset>
 
-          {/* --- BAGIAN 2: PKS (Tetap Sama) --- */}
+          {/* --- BAGIAN 2: PKS (REVISI UTAMA DI SINI) --- */}
           <fieldset className="p-4 border rounded-md">
             <legend className="px-2 font-semibold text-lg text-gray-700">
               Detail Perjanjian (PKS)
             </legend>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
+              {/* --- 1. Judul Kerjasama --- */}
+              <div className="md:col-span-2">
                 <label>Judul Kerjasama*</label>
                 <input
                   type="text"
@@ -281,6 +343,90 @@ export default function EditPksPage() {
                   className={inputClass}
                 />
               </div>
+
+              {/* --- 2. Bentuk Kerja Sama (Checkbox Array) - BARU --- */}
+              <div className="md:col-span-2">
+                <label className="block mb-2 font-medium text-gray-700">
+                  Bentuk Kerja Sama*
+                </label>
+                <div className="flex gap-6">
+                  <label className="inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      value="Penelitian"
+                      checked={formData.content.bentukKerjaSama?.includes(
+                        "Penelitian",
+                      )}
+                      onChange={handleBentukKerjaSamaChange}
+                      className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    />
+                    <span className="ml-2 text-gray-700">Penelitian</span>
+                  </label>
+                  <label className="inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      value="Pengabdian Masyarakat"
+                      checked={formData.content.bentukKerjaSama?.includes(
+                        "Pengabdian Masyarakat",
+                      )}
+                      onChange={handleBentukKerjaSamaChange}
+                      className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    />
+                    <span className="ml-2 text-gray-700">
+                      Pengabdian Masyarakat
+                    </span>
+                  </label>
+                </div>
+              </div>
+
+              {/* --- 3. Jenis Pengabdian (Conditional) - BARU --- */}
+              {formData.content.bentukKerjaSama?.includes(
+                "Pengabdian Masyarakat",
+              ) && (
+                <div className="md:col-span-2 animate-fade-in-down">
+                  <label className="block mb-1 font-medium text-gray-700">
+                    Jenis Pengabdian*
+                  </label>
+                  <select
+                    name="jenisPengabdian"
+                    data-section="content"
+                    value={formData.content.jenisPengabdian || ""}
+                    onChange={handleChange}
+                    required
+                    className={inputClass}
+                  >
+                    <option value="">-- Pilih Jenis Pengabdian --</option>
+                    <option value="Pengabdian bagi Masyarakat Umum">
+                      Pengabdian bagi Masyarakat Umum
+                    </option>
+                    <option value="Pengabdian bagi Masyarakat Industri">
+                      Pengabdian bagi Masyarakat Industri
+                    </option>
+                    <option value="Pengabdian bagi Masyarakat Kerja Sama Pemerintah">
+                      Pengabdian bagi Masyarakat Kerja Sama Pemerintah
+                    </option>
+                  </select>
+                </div>
+              )}
+
+              {/* --- 4. Potensi Hak Cipta (Checkbox) - BARU --- */}
+              <div className="md:col-span-2 bg-yellow-50 p-3 rounded border border-yellow-200">
+                <label className="inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="hasHakCipta"
+                    data-section="content"
+                    checked={formData.content.hasHakCipta || false}
+                    onChange={handleChange}
+                    className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500 border-gray-300"
+                  />
+                  <span className="ml-2 text-gray-800 font-medium">
+                    Apakah dokumen kerjasama ini memiliki potensi Hak Cipta?
+                  </span>
+                </label>
+              </div>
+
+              {/* --- Sisa Field Standard --- */}
               <div>
                 <label>Email Pemberitahuan*</label>
                 <input

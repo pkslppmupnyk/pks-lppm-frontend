@@ -332,7 +332,7 @@ export default function PksDetailPage() {
                 </span>
               }
             />
-            {/* === UPDATE: MENAMPILKAN BENTUK KERJASAMA & JENIS PENGABDIAN === */}
+            {/* === UPDATE: MENAMPILKAN BENTUK KERJASAMA & JENIS PENGABDIAN (SUDAH DIPERBAIKI) === */}
             <DetailRow
               label="Bentuk Kerja Sama"
               value={displayBentukKerjaSama}
@@ -345,17 +345,6 @@ export default function PksDetailPage() {
               />
             )}
 
-            <DetailRow
-              label="Bentuk Kerja Sama"
-              value={displayBentukKerjaSama}
-              className="font-medium"
-            />
-            {content.jenisPengabdian && (
-              <DetailRow
-                label="Jenis Pengabdian"
-                value={content.jenisPengabdian}
-              />
-            )}
             {/* --- TAMBAHAN DISPLAY HAK CIPTA --- */}
             <DetailRow
               label="Potensi Hak Cipta"
@@ -370,7 +359,7 @@ export default function PksDetailPage() {
               }
             />
             {/* ---------------------------------- */}
-            {/* === END UPDATE === */}
+
             <DetailRow label="Komentar Terakhir" value={properties?.comment} />
             <DetailRow
               label="Cakupan Kerjasama"
