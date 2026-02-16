@@ -9,7 +9,7 @@ import AdminLayout from "./components/layout/AdminLayout";
 import PublicDashboard from "./pages/PublicDashboard";
 import SubmitPksPage from "./pages/SubmitPksPage";
 import PksTrackingPage from "./pages/PksTrackingPage";
-import PanduanPage from "./pages/PanduanPage"; // Impor halaman panduan
+import PanduanPage from "./pages/PanduanPage";
 
 // Halaman Admin
 import LoginPage from "./pages/LoginPage";
@@ -17,7 +17,8 @@ import AdminDashboard from "./pages/AdminDashboard";
 import PksDetailPage from "./pages/PksDetailPage";
 import EditPksPage from "./pages/EditPksPage";
 import RegisterAdminPage from "./pages/RegisterAdminPage";
-import AdminSettingsPage from "./pages/AdminSettingsPage"; // Import page baru
+import AdminSettingsPage from "./pages/AdminSettingsPage";
+import PksTablePage from "./pages/PksTablePage"; // <--- IMPORT HALAMAN BARU
 
 // Komponen utilitas
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -30,10 +31,8 @@ export default function App() {
         <Route element={<PublicLayout />}>
           <Route path="/" element={<PublicDashboard />} />
           <Route path="/submit-pks" element={<SubmitPksPage />} />
-          {/* Diubah ke :id */}
           <Route path="/track/:id" element={<PksTrackingPage />} />
-          <Route path="/panduan" element={<PanduanPage />} />{" "}
-          {/* Rute panduan */}
+          <Route path="/panduan" element={<PanduanPage />} />
         </Route>
 
         {/* === RUTE ADMIN & LOGIN === */}
@@ -41,12 +40,15 @@ export default function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="/admin" element={<AdminLayout />}>
             <Route path="dashboard" element={<AdminDashboard />} />
-            {/* Diubah ke :id */}
+
+            {/* RUTE BARU: TAMPILAN TABEL */}
+            <Route path="pks-table" element={<PksTablePage />} />
+
             <Route path="pks/:id" element={<PksDetailPage />} />
             <Route path="pks/:id/edit" element={<EditPksPage />} />
             <Route path="register-admin" element={<RegisterAdminPage />} />
             <Route path="settings" element={<AdminSettingsPage />} />
-            {/* Default redirect untuk /admin */}
+
             <Route index element={<Navigate to="/admin/dashboard" />} />
           </Route>
         </Route>

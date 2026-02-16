@@ -40,7 +40,18 @@ export default function AdminLayout() {
                 Dasbor PKS
               </Link>
             </li>
-            {/* --- TAMBAHKAN MENU BARU DI SINI --- */}
+
+            {/* --- MENU BARU: TAMPILAN TABEL --- */}
+            <li className="mb-4">
+              <Link
+                to="/admin/pks-table"
+                className="block p-2 rounded hover:bg-gray-700"
+              >
+                Tampilan Tabel
+              </Link>
+            </li>
+            {/* ---------------------------------- */}
+
             <li className="mb-4">
               <Link
                 to="/admin/register-admin"
@@ -57,7 +68,6 @@ export default function AdminLayout() {
                 Pengaturan Nomor dan Tahun
               </Link>
             </li>
-            {/* ---------------------------------- */}
           </ul>
         </nav>
       </aside>
